@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package frontend_base_service;
+
+import "google/protobuf/empty.proto";
+
+service Route {
+    rpc GetRoute (google.protobuf.Empty) returns (UniversalReply);
+}
+
+service I18n {
+    rpc GetI18n (I18nRequest) returns (UniversalReply);
+}
+
+message I18nRequest {
+    string lang = 1;
+}
+
+message UniversalReply {
+    string message = 1;
+}

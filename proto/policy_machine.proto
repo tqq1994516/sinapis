@@ -1,0 +1,136 @@
+syntax = "proto3";
+
+package policy_machine;
+
+option java_outer_classname = "PolicyMachineProto";
+option java_package = "com.semen_sinapis.policy_machine";
+
+import "google/protobuf/empty.proto";
+
+service PolicyMachine {
+    rpc GetNode (GetNodeRequest) returns (NodeResponse);
+    rpc CreatePolicyClass (CreatePolicyClassRequest) returns (NodeResponse);
+    rpc CreateUser (CreateNodeRequest) returns (NodeResponse);
+    rpc CreateUserAttribute (CreateNodeRequest) returns (NodeResponse);
+    rpc CreateObject (CreateNodeRequest) returns (NodeResponse);
+    rpc CreateObjectAttribute (CreateNodeRequest) returns (NodeResponse);
+    rpc SetNodeProperties (SetNodePropertiesRequest) returns (NodeResponse);
+    rpc AddNodeProperties (AddNodePropertiesRequest) returns (NodeResponse);
+    rpc Search (SearchNodeRequest) returns (NodesResponse);
+    rpc DeleteNode (GetNodeRequest) returns (ResultResponse);
+    rpc GetPolicyClasses (google.protobuf.Empty) returns (NodesResponse);
+    rpc Assign (AssignRequest) returns (ResultResponse);
+    rpc Deassign (AssignRequest) returns (ResultResponse);
+    rpc AssignAll (AssignAllRequest) returns (ResultResponse);
+    rpc DeassignAll (AssignAllRequest) returns (ResultResponse);
+    rpc DeassignAllAndDelete (NodeRequest) returns (ResultResponse);
+    rpc GetChildren (GetNodeRequest) returns (NodesResponse);
+    rpc GetParents (GetNodeRequest) returns (NodesResponse);
+    rpc Associate (AssociateRequest) returns (ResultResponse);
+    rpc Dissociate (AssociateRequest) returns (ResultResponse);
+    rpc GetAssociationsWithSource (AssociateWithRequest) returns (AssociationsResponse);
+    rpc GetAssociationsWithTarget (AssociateWithRequest) returns (AssociationsResponse);
+    rpc GetResourceAccessRights (google.protobuf.Empty) returns (AccessRightSetResponse);
+    rpc SetResourceAccessRights (AccessRightSetResponse) returns (ResultResponse);
+    rpc GetACL (NodeRequest) returns (ACLResponse);
+    rpc GetCapabilityList (NodeRequest) returns (ACLResponse);
+    rpc GetPOS (NodeRequest) returns (AccessRightSetResponse);
+    rpc GetAccessRights (GetNodeRequest) returns (AccessRightSetResponse);
+    rpc GetDeniedAccessRights (GetNodeRequest) returns (AccessRightSetResponse);
+    rpc GetPolicyClassAccessRights (GetNodeRequest) returns (ACLResponse);
+    rpc GetBorderAttributes (NodeRequest) returns (ACLResponse);
+    rpc GetSubgraphAccessRights (GetNodeRequest) returns (ACLResponse);
+    rpc GetAccessibleChildren (GetNodeRequest) returns (NodesResponse);
+    rpc GetAccessibleParents (GetNodeRequest) returns (NodesResponse);
+}
+
+message NodeRequest {
+    string nodeName = 1;
+}
+
+message GetNodeRequest {
+    string nodeName = 1;
+    string username = 2;
+}
+
+message AssignRequest {
+    string child = 1;
+    string parent = 2;
+}
+
+message AssociateRequest {
+    string ua = 1;
+    string username = 2;
+    AccessRightSetResponse accessRights = 3;
+}
+
+message AssociateWithRequest {
+    string node = 1;
+    string username = 2;
+}
+
+message AssignAllRequest {
+    repeated string children = 1;
+    string parent = 2;
+}
+
+message SearchNodeRequest {
+    string type = 1;
+    string username = 2;
+    map<string, string> nodeProperties = 3;
+}
+
+message SetNodePropertiesRequest {
+    string nodeName = 1;
+    map<string, string> nodeProperties = 2;
+}
+
+message AddNodePropertiesRequest {
+    string nodeName = 1;
+    string key = 2;
+    string value = 3;
+}
+
+message CreateNodeRequest {
+    string username = 1;
+    map<string, string> nodeProperties = 2;
+    string perent = 3;
+    repeated string perents = 4;
+}
+
+message CreatePolicyClassRequest {
+    string pcName = 1;
+    map<string, string> pcProperties = 2; 
+}
+
+message NodeResponse {
+    string name = 1;
+    string type = 2;
+    map<string, string> properties = 3;
+}
+
+message NodesResponse {
+    repeated NodeResponse nodes = 1;
+}
+
+message ResultResponse {
+    string result = 1;
+}
+
+message AssociateResponse {
+    string source = 1;
+    string target = 2;
+    AccessRightSetResponse accessRightSet = 3;
+}
+
+message AssociationsResponse {
+    repeated AssociateResponse associate = 1;
+}
+
+message AccessRightSetResponse {
+    repeated string accessRightSet = 1;
+}
+
+message ACLResponse {
+    map<string, AccessRightSetResponse> acl = 1;
+}
