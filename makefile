@@ -24,13 +24,18 @@ person_center:
 	cd ${PERSON_CENTER} && cargo build
 endif
 
+ifeq ($(RELEASE),true)
 person_center_image: person_center
 	docker build --target ${PERSON_CENTER} -t ${PERSON_CENTER}:${VERSION} .
+else
+person_center_image: person_center
+	docker build -f Dockerfile.debug --target ${PERSON_CENTER} -t ${PERSON_CENTER}:${VERSION} .
+endif
 
 person_center_apply: person_center_image
 	docker tag ${PERSON_CENTER}:${VERSION} ${HARBOR_HOST}/library/${APP}/${PERSON_CENTER}:${VERSION}
 	docker push ${HARBOR_HOST}/library/${APP}/${PERSON_CENTER}:${VERSION}
-	cd mainfest && kubectl apply -f ${PERSON_CENTER}.yaml
+	cd manifests && kubectl apply -f ${PERSON_CENTER}.yaml
 
 ifeq ($(RELEASE),true)
 frontend_base_service:
@@ -40,13 +45,18 @@ frontend_base_service:
 	cd ${FRONTEND_BASE_SERVICE} && cargo build
 endif
 
+ifeq ($(RELEASE),true)
 frontend_base_service_image: frontend_base_service
 	docker build --target ${FRONTEND_BASE_SERVICE} -t ${PERSON_CENTER}:${VERSION} .
+else
+frontend_base_service_image: frontend_base_service
+	docker build -f Dockerfile.debug --target ${PERSON_CENTER} -t ${PERSON_CENTER}:${VERSION} .
+endif
 
 frontend_base_service_apply: frontend_base_service_image
 	docker tag ${FRONTEND_BASE_SERVICE}:${VERSION} ${HARBOR_HOST}/library/${APP}/${FRONTEND_BASE_SERVICE}:${VERSION}
 	docker push ${HARBOR_HOST}/library/${APP}/${FRONTEND_BASE_SERVICE}:${VERSION}
-	cd mainfest && kubectl apply -f ${FRONTEND_BASE_SERVICE}.yaml
+	cd manifests && kubectl apply -f ${FRONTEND_BASE_SERVICE}.yaml
 
 ifeq ($(RELEASE),true)
 aggregation_gateway:
@@ -56,10 +66,15 @@ aggregation_gateway:
 	cd ${AGGREGATION_GATEWAY} && cargo build
 endif
 
+ifeq ($(RELEASE),true)
 aggregation_gateway_image: aggregation_gateway
 	docker build --target ${AGGREGATION_GATEWAY} -t ${PERSON_CENTER}:${VERSION} .
+else
+aggregation_gateway_image: aggregation_gateway
+	docker build -f Dockerfile.debug --target ${PERSON_CENTER} -t ${PERSON_CENTER}:${VERSION} .
+endif
 
 aggregation_gateway_apply: frontend_base_service_image
 	docker tag ${AGGREGATION_GATEWAY}:${VERSION} ${HARBOR_HOST}/library/${APP}/${AGGREGATION_GATEWAY}:${VERSION}
 	docker push ${HARBOR_HOST}/library/${APP}/${AGGREGATION_GATEWAY}:${VERSION}
-	cd mainfest && kubectl apply -f ${AGGREGATION_GATEWAY}.yaml
+	cd manifests && kubectl apply -f ${AGGREGATION_GATEWAY}.yaml
