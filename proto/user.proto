@@ -4,6 +4,7 @@ package person_center;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
+import "universal.proto";
 
 service User {
     rpc UserList (UserListReq) returns (UsersResponse);
@@ -18,10 +19,12 @@ service User {
 message UserListReq {
     optional int64 id = 1;
     optional string name = 2;
+    int64 organization = 3;
 }
 
 message UserDetailReq {
     int64 id = 1;
+    int64 organization = 2;
 }
 
 message UpdateUserReq {
@@ -31,6 +34,7 @@ message UpdateUserReq {
     optional string email = 4;
     optional string phone = 5;
     optional google.protobuf.Any info = 6;
+    int64 organization = 7;
 }
 
 message InsertUserReq {
@@ -52,6 +56,7 @@ message UserResponse {
     google.protobuf.Any info = 7;
     google.protobuf.Timestamp create_time = 8;
     google.protobuf.Timestamp update_time = 9;
+    int64 organization = 10;
 }
 
 message UsersResponse {
@@ -71,12 +76,4 @@ message Logged {
 message CheckPermissionReq {
     int64 user_id = 1;
     int64 resource_id = 2;
-}
-
-message Accessable {
-    bool accessable = 1;
-}
-
-message Report {
-    string message = 1;
 }

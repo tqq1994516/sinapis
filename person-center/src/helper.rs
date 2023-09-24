@@ -20,5 +20,6 @@ pub fn user_model_to_user_grpc_response(user: User) -> UserResponse {
         info: Some(info),
         create_time: Some(create_time),
         update_time: Some(update_time),
+        organization: user.organization,
     }
 }

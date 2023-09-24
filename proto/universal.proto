@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package person_center;
+
+message Accessable {
+    bool accessable = 1;
+}
+
+message Report {
+    string message = 1;
+}

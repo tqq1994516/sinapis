@@ -9,6 +9,36 @@ entries:
       - ../proto
       keep_unknown_fields: false
     - source: local
+      path: ../proto/universal.proto
+      includes:
+      - ../proto
+      keep_unknown_fields: false
+    - source: local
+      path: ../proto/role.proto
+      includes:
+      - ../proto
+      keep_unknown_fields: false
+    - source: local
+      path: ../proto/organization.proto
+      includes:
+      - ../proto
+      keep_unknown_fields: false
+    - source: local
+      path: ../proto/permission.proto
+      includes:
+      - ../proto
+      keep_unknown_fields: false
+    - source: local
+      path: ../proto/policy.proto
+      includes:
+      - ../proto
+      keep_unknown_fields: false
+    - source: local
+      path: ../proto/resource_type.proto
+      includes:
+      - ../proto
+      keep_unknown_fields: false
+    - source: local
       path: ../proto/frontend_base_service.proto
       includes:
       - ../proto
