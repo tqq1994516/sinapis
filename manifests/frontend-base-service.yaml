@@ -52,7 +52,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: frontend-base-service-svc
-  namespace: mustard-seed
+  namespace: semen-sinapis
   labels:
     app: frontend-base-service
 spec:
