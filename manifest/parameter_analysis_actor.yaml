@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parameter-analysis-actor
+  namespace: mustard-seed
+  labels:
+    app: parameter-analysis-actor
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: parameter-analysis-actor
+  template:
+    metadata:
+      labels:
+        app: parameter-analysis-actor
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "parameter-analysis-actor"
+        dapr.io/app-port: "8000"
+        dapr.io/sidecar-liveness-probe-delay-seconds: "10"
+        dapr.io/sidecar-readiness-probe-delay-seconds: "10"
+        dapr.io/log-as-json: "true"
+    spec:
+      containers:
+        - name: parameter-analysis-actor
+          image: parameter_analysis_actor:v0.0.1
+          imagePullPolicy: IfNotPresent
+          command: ["uvicorn"]
+          args: ["--host", "0.0.0.0", "--port", "8000", "main:app"]
+          ports:
+          - containerPort: 8000

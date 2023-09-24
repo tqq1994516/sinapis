@@ -1,5 +1,5 @@
+use sea_orm::DatabaseConnection;
 use std::error::Error;
-use async_recursion::async_recursion;
 use sea_orm::{
     Condition,
     QueryOrder,
@@ -9,62 +9,48 @@ use sea_orm::{
         NotSet,
     },
 };
-use dapr::appcallback::InvokeResponse;
-use prost::Message;
-use prost_types::Any;
 use time::OffsetDateTime;
 
-use entity::prelude::*;
-use entity::*;
-use super::utils::user_model_to_user_grpc_response;
+use entity::{*, prelude::*};
+use volo_gen::person_center::{
+    UsersResponse,
+    UserResponse,
+    Report,
+    UserListReq,
+    UserDetailReq,
+    UpdateUserReq,
+    InsertUserReq,
+    LoginForm,
+    Logged,
+    CheckPermissionReq,
+    Accessable,
+};
 use utils::encryption::encryption;
-use person_center::*;
-use report::*;
+use super::helper::user_model_to_user_grpc_response;
 
-pub mod person_center {
-    tonic::include_proto!("person_center");
-}
-
-pub mod report {
-    tonic::include_proto!("report");
-}
-
-
-pub async fn user_detail(
-    data: &Vec<u8>,
+pub async fn user_detail_service(
+    data: UserDetailReq,
     db: &DatabaseConnection
-) -> Result<InvokeResponse, Box<dyn Error>> {
-    let req = UserDetail::decode(&data[..])?;
-    let user = UserInfo::find_by_id(req.id).one(db).await?;
+) -> Result<UserResponse, Box<dyn Error>> {
+    let user = UserInfo::find_by_id(data.id).one(db).await?;
     match user {
         Some(value) => {
-            let resp = user_model_to_user_grpc_response(value);
-            let data = resp.encode_to_vec();
-            let data = Any {
-                type_url: "".to_owned(),
-                value: data,
-            };
-            let invoke_response = InvokeResponse {
-                content_type: "application/json".to_string(),
-                data: Some(data),
-            };
-            Ok(invoke_response)
+            Ok(user_model_to_user_grpc_response(value))
         },
-        None => Ok(InvokeResponse::default()),
+        None => Ok(UserResponse::default()),
     }
 }
 
-pub async fn user_list(
-    data: &Vec<u8>,
+pub async fn user_list_service(
+    data: UserListReq,
     db: &DatabaseConnection
-) -> Result<InvokeResponse, Box<dyn Error>> {
-    let req = UserList::decode(&data[..])?;
+) -> Result<UsersResponse, Box<dyn Error>> {
     let mut condition = Condition::all();
-    if req.id.is_some() {
-        condition = condition.add(user_info::Column::Id.eq(req.id.unwrap()));
+    if data.id.is_some() {
+        condition = condition.add(user_info::Column::Id.eq(data.id.unwrap()));
     }
-    if req.name.is_some() {
-        condition = condition.add(user_info::Column::Name.eq(req.name.unwrap()));
+    if data.name.is_some() {
+        condition = condition.add(user_info::Column::Name.eq(String::from(data.name.unwrap())));
     }
     let users = UserInfo::find()
         .filter(condition)
@@ -75,39 +61,29 @@ pub async fn user_list(
         .map(|u| user_model_to_user_grpc_response(u))
         .collect::<Vec<UserResponse>>();
     let resp = UsersResponse { users: users.into() };
-    let data = resp.encode_to_vec();
-    let data = prost_types::Any {
-        type_url: "".to_owned(),
-        value: data,
-    };
-    let invoke_response = InvokeResponse {
-        content_type: "application/json".to_string(),
-        data: Some(data),
-    };
-    Ok(invoke_response)
+    Ok(resp)
 }
 
-pub async fn update_user(
-    data: &Vec<u8>,
+pub async fn update_user_service(
+    data: UpdateUserReq,
     db: &DatabaseConnection
-) -> Result<InvokeResponse, Box<dyn Error>> {
-    let req = UpdateUser::decode(&data[..])?;
-    let user: Option<user_info::Model> = UserInfo::find_by_id(req.id).one(db).await?;
+) -> Result<UserResponse, Box<dyn Error>> {
+    let user: Option<user_info::Model> = UserInfo::find_by_id(data.id).one(db).await?;
     match user {
         Some(value) => {
             let id = value.id;
-            let info = match &req.info {
+            let info = match &data.info {
                 Some(info) => Set(Some(serde_json::from_slice(&info.value)?)),
                 None => Set(Some(value.info.unwrap())),
             };
             let new_user = user_info::ActiveModel {
                 id: Set(id),
-                name: Set(req.name.unwrap_or(String::from(&value.name))),
-                email: Set(Some(req.email.unwrap_or(String::from(value.email.unwrap())))),
-                phone: Set(Some(req.phone.unwrap_or(String::from(value.phone.unwrap())))),
+                name: Set(data.name.unwrap_or(String::from(&value.name).into()).to_string()),
+                email: Set(Some(data.email.unwrap_or(String::from(value.email.unwrap()).into()).to_string())),
+                phone: Set(Some(data.phone.unwrap_or(String::from(value.phone.unwrap()).into()).to_string())),
                 info,
                 update_time: Set(Some(OffsetDateTime::now_utc())),
-                password: Set(encryption(&req.password.unwrap_or(value.password))),
+                password: Set(encryption(&data.password.unwrap_or(value.password.into()))),
                 online: Set(value.online),
                 create_time: Set(value.create_time),
                 organization: Set(value.organization),
@@ -119,80 +95,79 @@ pub async fn update_user(
                 .filter(user_info::Column::Id.eq(id))
                 .exec(db)
                 .await?;
-            let resp = user_model_to_user_grpc_response(user);
-            let data = resp.encode_to_vec();
-            let data = prost_types::Any {
-                type_url: "".to_owned(),
-                value: data,
-            };
-            let invoke_response = InvokeResponse {
-                content_type: "application/json".to_string(),
-                data: Some(data),
-            };
-            Ok(invoke_response)
+            Ok(user_model_to_user_grpc_response(user))
         },
-        None => Ok(InvokeResponse::default()),
+        None => Ok(UserResponse::default()),
     }
 }
 
-pub async fn insert_user(
-    data: &Vec<u8>,
+pub async fn insert_user_service(
+    data: InsertUserReq,
     db: &DatabaseConnection
-) -> Result<InvokeResponse, Box<dyn Error>> {
-    let req = InsertUser::decode(&data[..])?;
-    if let Some(info) = req.info {
+) -> Result<UserResponse, Box<dyn Error>> {
+    if let Some(info) = data.info {
         let info_value = serde_json::from_slice(&info.value)?;
         let user = user_info::ActiveModel {
             id: NotSet,
-            name: Set(req.name),
-            password: Set(encryption(&req.password)),
-            email: Set(req.email),
-            phone: Set(req.phone),
+            name: Set(data.name.to_string()),
+            password: Set(encryption(&data.password)),
+            email: Set(Some(data.email.unwrap_or("".into()).to_string())),
+            phone: Set(Some(data.phone.unwrap_or("".into()).to_string())),
             online: Set(Some(false)),
             info: Set(Some(info_value)),
             create_time: Set(Some(OffsetDateTime::now_utc())),
             update_time: Set(Some(OffsetDateTime::now_utc())),
-            organization: Set(req.organization),
+            organization: Set(data.organization),
             accessible: Set(true),
             period_of_validity: NotSet,
             available: Set(true),
         };
         let user = user.insert(db).await?;
-        let resp = user_model_to_user_grpc_response(user);
-        let data = resp.encode_to_vec();
-        let data = prost_types::Any {
-            type_url: "".to_owned(),
-            value: data,
-        };
-        let invoke_response = InvokeResponse {
-            content_type: "application/json".to_string(),
-            data: Some(data),
-        };
-        Ok(invoke_response)
+        Ok(user_model_to_user_grpc_response(user))
     } else {
-        Ok(InvokeResponse::default())
+        Ok(UserResponse::default())
     }
 }
 
-pub async fn delete_user(
-    data: &Vec<u8>,
+pub async fn delete_user_service(
+    data: UserDetailReq,
     db: &DatabaseConnection
-) -> Result<InvokeResponse, Box<dyn Error>> {
-    let req = UserDetail::decode(&data[..])?;
-    let user = UserInfo::delete_by_id(req.id).exec(db).await?;
+) -> Result<Report, Box<dyn Error>> {
+    let user = UserInfo::delete_by_id(data.id).exec(db).await?;
     let resp = Report {
-        message: format!("user id : {:#?} is delete.", user),
+        message: format!("user id : {:#?} is delete.", user).into(),
     };
-    let data = resp.encode_to_vec();
-    let data = prost_types::Any {
-        type_url: "".to_owned(),
-        value: data,
+    Ok(resp)
+}
+
+pub async fn login_service(
+    data: LoginForm,
+    db: &DatabaseConnection
+) -> Result<Logged, Box<dyn Error>> {
+    let user = UserInfo::find()
+        .filter(
+            Condition::all()
+                .add(
+                    user_info::Column::Name.eq(data.username.to_string())
+                )
+                .add(
+                    user_info::Column::Password.eq(encryption(&data.password))
+                )
+            )
+            .all(db)
+            .await?;
+    let resp = Logged {
+        access_token: "1111".to_owned().into(),
+        refresh_token: "22222".to_owned().into(),
     };
-    let invoke_response = InvokeResponse {
-        content_type: "application/json".to_string(),
-        data: Some(data),
-    };
-    return Ok(invoke_response);
+    Ok(resp)
+}
+
+pub async fn check_permission_service(
+    data: CheckPermissionReq,
+    db: &DatabaseConnection
+) -> Result<Accessable, Box<dyn Error>> {
+    Ok(Accessable { accessable: true })
 }
 
 // 在evaluate时考虑继承
@@ -229,7 +204,7 @@ async fn evaluate(
 }
 
 // 递归收集角色继承关系，在权限检查时递归合并父角色权限
-#[async_recursion]
+#[pilota::async_recursion::async_recursion]
 async fn collect_roles<'a>(
     db: &'a DatabaseConnection,
     roles: Vec<role::Model>,

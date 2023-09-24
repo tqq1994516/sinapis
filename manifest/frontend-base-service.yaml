@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-base-service
+  namespace: semen-sinapis
+  labels:
+    app: frontend-base-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: frontend-base-service
+  template:
+    metadata:
+      labels:
+        app: frontend-base-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "frontend-base-service"
+        dapr.io/app-port: "50000"
+        dapr.io/sidecar-liveness-probe-delay-seconds: "10"
+        dapr.io/sidecar-readiness-probe-delay-seconds: "10"
+        dapr.io/log-as-json: "true"
+        dapr.io/app-protocol: "grpc"
+    spec:
+      containers:
+        - name: frontend-base-service
+          image: 192.168.33.48/library/semen-sinapis/frontend-base-service:v0.0.1
+          imagePullPolicy: IfNotPresent
+          command: ["./frontend-base-service"]
+          ports:
+            - containerPort: 50000
+          env:
+            - name: ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: frontend-base-service-cm
+                  key: ADDR
+            - name: NACOS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: frontend-base-service-cm
+                  key: NACOS_HOST
+            - name: CONFIG_NAMESPACE
+              valueFrom:
+                configMapKeyRef:
+                  name: frontend-base-service-cm
+                  key: CONFIG_NAMESPACE
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: frontend-base-service-svc
+  namespace: mustard-seed
+  labels:
+    app: frontend-base-service
+spec:
+  selector:
+    app: frontend-base-service
+  ports:
+  - protocol: TCP
+    port: 50000
+    targetPort: 50000
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-base-service-cm
+data:
+  ADDR: 0.0.0.0:50000
+  NACOS_HOST: nacos-cs:8848
+  CONFIG_NAMESPACE: semen-sinapis

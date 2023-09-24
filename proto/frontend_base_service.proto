@@ -5,17 +5,17 @@ package frontend_base_service;
 import "google/protobuf/empty.proto";
 
 service Route {
-    rpc GetRoute (google.protobuf.Empty) returns (UniversalReply);
+    rpc GetRoute (google.protobuf.Empty) returns (JsonReply);
 }
 
 service I18n {
-    rpc GetI18n (I18nRequest) returns (UniversalReply);
+    rpc GetI18n (I18nRequest) returns (JsonReply);
 }
 
 message I18nRequest {
     string lang = 1;
 }
 
-message UniversalReply {
-    string message = 1;
+message JsonReply {
+    string result = 1;
 }

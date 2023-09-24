@@ -5,22 +5,43 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [workspace]
-members = [".", "entity", "layer", "macros", "migration", "utils"]
+members = ["entity", "layer", "macros", "migration", "utils", "volo-gen", "person-center", "aggregation-gateway", "frontend-base-service"]
 
-[dependencies]
+[[bin]]
+name = "person-center"
+path = "person-center/src/main.rs"
+
+[[bin]]
+name = "aggregation-gateway"
+path = "aggregation-gateway/src/main.rs"
+
+[[bin]]
+name = "frontend-base-service"
+path = "frontend-base-service/src/main.rs"
+
+[workspace.dependencies]
+dapr = "0"
+serde_json = "1"
+time = "0"
+tower = "0"
+volo = "0"
+volo-grpc = "0"
+volo-build = "0"
+anyhow = "1"
+async-trait = "0"
+futures = "0"
+pilota = "0"
+axum = "0"
+mime = "0"
+axum-macros = "0"
+serde_yaml = "0"
+tracing = "0"
+prost-types = "0"
+
+utoipa = { version = "3", features = ["axum_extras"] }
+utoipa-swagger-ui = { version = "3", features = ["axum"] }
 serde = { version = "1", features = ["derive"] }
 sea-orm = { version = "0", features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros", "with-time", "with-json", "postgres-array"] }
 tokio = { version = "1", features = ["full"] }
-tower = "0"
-tonic = { version = "0.8", features = ["transport", "prost", "codegen"] }
-dotenv = "0"
-dapr = "0"
-prost = "0.11"
-prost-types = "0.11"
-serde_json = "1"
-time = "0"
-async-recursion = "1"
-argon2 = { vesion = "0", features = ["alloc", "password-hash"] }
-
-[build-dependencies]
-tonic-build = "0.8"
+argon2 = { version = "0", features = ["alloc", "password-hash"] }
+nacos-sdk = { version = "0", features = ["async"] }

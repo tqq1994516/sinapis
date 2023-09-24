@@ -1,0 +1,15 @@
+entries:
+  default:
+    protocol: protobuf
+    filename: volo_gen.rs
+    idls:
+    - source: local
+      path: ../proto/user.proto
+      includes:
+      - ../proto
+      keep_unknown_fields: false
+    - source: local
+      path: ../proto/frontend_base_service.proto
+      includes:
+      - ../proto
+      keep_unknown_fields: false

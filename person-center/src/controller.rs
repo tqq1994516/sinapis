@@ -1,86 +1,74 @@
-use std::sync::Arc;
-
-use dapr::{
-    appcallback::*,
-    dapr::dapr::proto::runtime::v1::app_callback_server::AppCallback,
-};
-use tonic::{Request, Response, Status};
+use volo_grpc::{Status, Request, Response};
 use sea_orm::DatabaseConnection;
 
-use super::service::{
-    user_detail,
-    user_list,
-    update_user,
-    delete_user,
-    insert_user,
+use volo_gen::person_center::{
+    UsersResponse,
+    UserResponse,
+    Report,
+    UserListReq,
+    UserDetailReq,
+    UpdateUserReq,
+    InsertUserReq,
+    LoginForm,
+    Logged,
+    CheckPermissionReq,
+    Accessable,
 };
 
-pub struct UserInfo {}
+use super::service::{
+    user_detail_service,
+    user_list_service,
+    update_user_service,
+    delete_user_service,
+    insert_user_service,
+    login_service,
+    check_permission_service,
+};
 
-#[tonic::async_trait]
-impl AppCallback for UserInfo {
-    /// Invokes service method with InvokeRequest.
-    async fn on_invoke(
-        &self,
-        request: Request<InvokeRequest>,
-    ) -> Result<Response<InvokeResponse>, Status> {
-        let db = &request.extensions().get::<Arc<DatabaseConnection>>().unwrap();
-        let r = &request.into_inner();
+#[derive(Debug, Default)]
+pub struct UserService {}
 
-        let method = &r.method;
-        println!("Method: {method}");
-        let data = &r.data;
-        let data = data.as_ref().unwrap();
-        let data = &data.value;
-        match method.as_str() {
-            "UserDetail" => {
-                return Ok(Response::new(user_detail(data, db).await.unwrap()));
-            },
-            "UserList" => {
-                return Ok(Response::new(user_list(data, db).await.unwrap()));
-            },
-            "UpdateUser" => {
-                return Ok(Response::new(update_user(data, db).await.unwrap()));
-            },
-            "DeleteUser" => {
-                return Ok(Response::new(delete_user(data, db).await.unwrap()));
-            },
-            "InsertUser" => {
-                return Ok(Response::new(insert_user(data, db).await.unwrap()));
-            },
-            _ => return Ok(Response::new(InvokeResponse::default())),
-        }
+#[volo::async_trait]
+impl volo_gen::person_center::User for UserService {
+	async fn user_list(&self, req: Request<UserListReq>) -> Result<Response<UsersResponse>, Status> {
+        let (_, extensions, data) = req.into_parts();
+        let db = extensions.get::<DatabaseConnection>().unwrap();
+        Ok(Response::new(user_list_service(data, db).await.unwrap()))
     }
 
-    async fn list_topic_subscriptions(
-        &self,
-        _request: Request<()>,
-    ) -> Result<Response<ListTopicSubscriptionsResponse>, Status> {
-        let list_subscriptions = ListTopicSubscriptionsResponse::default();
-        Ok(Response::new(list_subscriptions))
+	async fn user_detail(&self, req: Request<UserDetailReq>) -> Result<Response<UserResponse>, Status> {
+        let (_, extensions, data) = req.into_parts();
+        let db = extensions.get::<DatabaseConnection>().unwrap();
+        Ok(Response::new(user_detail_service(data, db).await.unwrap()))
     }
 
-    /// Subscribes events from Pubsub.
-    async fn on_topic_event(
-        &self,
-        _request: Request<TopicEventRequest>,
-    ) -> Result<Response<TopicEventResponse>, Status> {
-        Ok(Response::new(TopicEventResponse::default()))
+	async fn update_user(&self, req: Request<UpdateUserReq>) -> Result<Response<UserResponse>, Status> {
+        let (_, extensions, data) = req.into_parts();
+        let db = extensions.get::<DatabaseConnection>().unwrap();
+        Ok(Response::new(update_user_service(data, db).await.unwrap()))
     }
 
-    /// Lists all input bindings subscribed by this app.
-    async fn list_input_bindings(
-        &self,
-        _request: Request<()>,
-    ) -> Result<Response<ListInputBindingsResponse>, Status> {
-        Ok(Response::new(ListInputBindingsResponse::default()))
+	async fn insert_user(&self, req: Request<InsertUserReq>) -> Result<Response<UserResponse>, Status> {
+        let (_, extensions, data) = req.into_parts();
+        let db = extensions.get::<DatabaseConnection>().unwrap();
+        Ok(Response::new(insert_user_service(data, db).await.unwrap()))
     }
 
-    /// Listens events from the input bindings.
-    async fn on_binding_event(
-        &self,
-        _request: Request<BindingEventRequest>,
-    ) -> Result<Response<BindingEventResponse>, Status> {
-        Ok(Response::new(BindingEventResponse::default()))
+	async fn delete_user(&self, req: Request<UserDetailReq>) -> Result<Response<Report>, Status> {
+        let (_, extensions, data) = req.into_parts();
+        let db = extensions.get::<DatabaseConnection>().unwrap();
+        Ok(Response::new(delete_user_service(data, db).await.unwrap()))
+    }
+
+	async fn login(&self, req: Request<LoginForm>) -> Result<Response<Logged>, Status> {
+        let (_, extensions, data) = req.into_parts();
+        let db = extensions.get::<DatabaseConnection>().unwrap();
+        Ok(Response::new(login_service(data, db).await.unwrap()))
+    }
+
+	async fn check_permission(&self, req: Request<CheckPermissionReq>) -> Result<Response<Accessable>, Status> {
+        let (_, extensions, data) = req.into_parts();
+        let db = extensions.get::<DatabaseConnection>().unwrap();
+        Ok(Response::new(check_permission_service(data, db).await.unwrap()))
     }
 }
