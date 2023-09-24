@@ -59,5 +59,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: aggregation-gateway-cm
+  namespace: semen-sinapis
+  labels:
+    app: aggregation-gateway
 data:
   ADDR: 0.0.0.0:80

@@ -47,10 +47,10 @@ endif
 
 ifeq ($(RELEASE),true)
 frontend_base_service_image: frontend_base_service
-	docker build --target ${FRONTEND_BASE_SERVICE} -t ${PERSON_CENTER}:${VERSION} .
+	docker build --target ${FRONTEND_BASE_SERVICE} -t ${FRONTEND_BASE_SERVICE}:${VERSION} .
 else
 frontend_base_service_image: frontend_base_service
-	docker build -f Dockerfile.debug --target ${PERSON_CENTER} -t ${PERSON_CENTER}:${VERSION} .
+	docker build -f Dockerfile.debug --target ${FRONTEND_BASE_SERVICE} -t ${FRONTEND_BASE_SERVICE}:${VERSION} .
 endif
 
 frontend_base_service_apply: frontend_base_service_image
@@ -68,10 +68,10 @@ endif
 
 ifeq ($(RELEASE),true)
 aggregation_gateway_image: aggregation_gateway
-	docker build --target ${AGGREGATION_GATEWAY} -t ${PERSON_CENTER}:${VERSION} .
+	docker build --target ${AGGREGATION_GATEWAY} -t ${AGGREGATION_GATEWAY}:${VERSION} .
 else
 aggregation_gateway_image: aggregation_gateway
-	docker build -f Dockerfile.debug --target ${PERSON_CENTER} -t ${PERSON_CENTER}:${VERSION} .
+	docker build -f Dockerfile.debug --target ${AGGREGATION_GATEWAY} -t ${AGGREGATION_GATEWAY}:${VERSION} .
 endif
 
 aggregation_gateway_apply: frontend_base_service_image
