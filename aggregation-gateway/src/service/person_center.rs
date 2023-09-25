@@ -4,7 +4,7 @@ use axum::{
     Extension,
     extract::Query,
 };
-use pilota::serde::Deserialize;
+use serde::Deserialize;
 use serde_json::Value;
 use utoipa::IntoParams;
 use prost::Message;
