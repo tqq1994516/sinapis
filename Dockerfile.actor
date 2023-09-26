@@ -1,0 +1,33 @@
+FROM python:3.11.5-bullseye as base
+
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+RUN sed -i 's/security.debian.org/mirrors.aliyun.com\/debian-security/g' /etc/apt/sources.list
+RUN apt update
+RUN apt install curl
+
+ENV RUSTUP_DIST_SERVER https://rsproxy.cn
+ENV RUSTUP_UPDATE_ROOT https://rsproxy.cn/rustup
+RUN mkdir -p ~/.cargo ~/.pip
+RUN curl --proto '=https' --tlsv1.2 -sSf https://rsproxy.cn/rustup-init.sh -y | sh
+RUN echo '[source.crates-io]\nreplace-with = "rsproxy-sparse"\n[source.rsproxy]\nregistry = "https://rsproxy.cn/crates.io-index"\n[source.rsproxy-sparse]\nregistry = "sparse+https://rsproxy.cn/index/"\n[registries.rsproxy]\nindex = "https://rsproxy.cn/crates.io-index"\n[net]\ngit-fetch-with-cli = true' > ~/.cargo/config
+RUN echo '[global]\nindex-url = https://mirrors.aliyun.com/pypi/simple/\n[install]\ntrusted-host=mirrors.aliyun.com\n' > ~/.pip/pip.conf
+RUN python -m pip install -U pip
+
+ARG DAPR_ACTOR_INTERFACE=dapr_actor_interface
+ARG PARAMETER_ANALYSIS=parameter-analysis
+
+WORKDIR /app
+ENV PYTHONPATH ./
+
+FROM base as parameter-analysis
+
+COPY ${PARAMETER_ANALYSIS} .
+
+RUN mkdir -p ./${DAPR_ACTOR_INTERFACE}
+COPY ${DAPR_ACTOR_INTERFACE} ./${DAPR_ACTOR_INTERFACE}
+
+RUN pip install -r requirements.txt
+
+EXPOSE 8000
+
+CMD ["./main.py"]

@@ -1,7 +1,7 @@
 from string import Template
 from dapr.actor import Actor
 
-from ..dapr_actor_interface import ParameterAnalysisActorInterface
+from dapr_actor_interface.parameter_analysis_actor_interface import ParameterAnalysisActorInterface
 
 
 class ParameterAnalysisActor(Actor, ParameterAnalysisActorInterface):

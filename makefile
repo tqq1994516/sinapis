@@ -6,6 +6,7 @@ APP = semen-sinapis
 PERSON_CENTER = person-center
 FRONTEND_BASE_SERVICE = frontend-base-service
 AGGREGATION_GATEWAY = aggregation-gateway
+PARAMETER_ANALYSIS = parameter-analysis
 
 all: person_center frontend_base_service aggregation_gateway
 
@@ -78,3 +79,6 @@ aggregation_gateway_apply: frontend_base_service_image
 	docker tag ${AGGREGATION_GATEWAY}:${VERSION} ${HARBOR_HOST}/library/${APP}/${AGGREGATION_GATEWAY}:${VERSION}
 	docker push ${HARBOR_HOST}/library/${APP}/${AGGREGATION_GATEWAY}:${VERSION}
 	cd manifests && kubectl apply -f ${AGGREGATION_GATEWAY}.yaml
+
+parameter_analysis_image: 
+	docker build -f Dockerfile.actor --target ${PARAMETER_ANALYSIS} -t ${PARAMETER_ANALYSIS}:${VERSION} .
