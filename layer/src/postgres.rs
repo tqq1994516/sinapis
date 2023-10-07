@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use sea_orm::{Database, DatabaseConnection};
 
 #[derive(Clone)]
@@ -6,8 +7,9 @@ pub struct PostgresqlService<S>(S);
 #[volo::service]
 impl<Cx, Req, S> volo::Service<Cx, Req> for PostgresqlService<S>
 where
-    Req: Send + 'static,
+    Req: Send + 'static + Debug,
     S: Send + 'static + volo::Service<Cx, Req> + Sync,
+    S::Response: Debug,
     Cx: Send + 'static + volo::context::Context,
 {
     async fn call(&self, cx: &mut Cx, req: Req) -> Result<S::Response, S::Error> {

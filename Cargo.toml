@@ -3,6 +3,9 @@ name = "semen-sinapis"
 version = "0.1.0"
 edition = "2021"
 
+[profile.dev]
+build-override.debug = true
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [workspace]
 members = ["entity", "layer", "macros", "migration", "utils", "volo-gen", "person-center", "aggregation-gateway", "frontend-base-service"]
@@ -38,9 +41,9 @@ serde_yaml = "0"
 tracing = "0"
 prost-types = "0"
 
+serde = { version = "1", features = ["derive"]}
 utoipa = { version = "3", features = ["axum_extras"] }
 utoipa-swagger-ui = { version = "3", features = ["axum"] }
-serde = { version = "1", features = ["derive"] }
 sea-orm = { version = "0", features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros", "with-time", "with-json", "postgres-array"] }
 tokio = { version = "1", features = ["full"] }
 argon2 = { version = "0", features = ["alloc", "password-hash"] }
