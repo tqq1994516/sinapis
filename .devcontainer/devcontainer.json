@@ -9,6 +9,9 @@
 		},
 		"ghcr.io/devcontainers-contrib/features/protoc:1": {
 			"version": "latest"
+		},
+		"devwasm.azurecr.io/dev-wasm/dev-wasm-feature/rust-wasi:0": {
+			"version": "latest"
 		}
 	},
 	"customizations": {
