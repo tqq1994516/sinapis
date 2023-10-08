@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: person-center
-  namespace: semen-sinapis
   labels:
     app: person-center
+  name: person-center
+  namespace: semen-sinapis
 spec:
   replicas: 3
   selector:
@@ -12,61 +12,61 @@ spec:
       app: person-center
   template:
     metadata:
+      annotations:
+        dapr.io/app-id: person-center
+        dapr.io/app-port: '50000'
+        dapr.io/app-protocol: grpc
+        dapr.io/enabled: 'true'
+        dapr.io/log-as-json: 'true'
+        dapr.io/sidecar-liveness-probe-delay-seconds: '10'
+        dapr.io/sidecar-readiness-probe-delay-seconds: '10'
+        module.wasm.image/variant: compat-smart
       labels:
         app: person-center
-      annotations:
-        dapr.io/enabled: "true"
-        dapr.io/app-id: "person-center"
-        dapr.io/app-port: "50000"
-        dapr.io/sidecar-liveness-probe-delay-seconds: "10"
-        dapr.io/sidecar-readiness-probe-delay-seconds: "10"
-        dapr.io/log-as-json: "true"
-        dapr.io/app-protocol: "grpc"
     spec:
       containers:
-        - name: aggregation-gateway
-          image: 192.168.33.48/library/semen-sinapis/person-center:v0.0.1
-          imagePullPolicy: IfNotPresent
-          command: ["./person-center"]
-          ports:
-            - containerPort: 50000
-          env:
-            - name: ADDR
-              valueFrom:
-                configMapKeyRef:
-                  name: person-center-cm
-                  key: ADDR
-            - name: DATABASE_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: person-center-cm
-                  key: DATABASE_URL
-
+      - command:
+        - ./person-center
+        env:
+        - name: ADDR
+          valueFrom:
+            configMapKeyRef:
+              key: ADDR
+              name: person-center-cm
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              key: DATABASE_URL
+              name: person-center-cm
+        image: 192.168.33.48/library/semen-sinapis/person-center:v0.0.1
+        imagePullPolicy: Alaways
+        name: person-center
+        ports:
+        - containerPort: 50000
 ---
 apiVersion: v1
 kind: Service
 metadata:
+  labels:
+    app: person-center
   name: person-center-svc
   namespace: semen-sinapis
-  labels:
-    app: person-center
 spec:
+  ports:
+  - port: 50000
+    protocol: TCP
+    targetPort: 50000
   selector:
     app: person-center
-  ports:
-  - protocol: TCP
-    port: 50000
-    targetPort: 50000
   type: ClusterIP
-
 ---
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: person-center-cm
-  namespace: semen-sinapis
-  labels:
-    app: person-center
 data:
   ADDR: 0.0.0.0:50000
   DATABASE_URL: postgres://postgres:postgres@postgresql.postgresql:5432/postgres
+kind: ConfigMap
+metadata:
+  labels:
+    app: person-center
+  name: person-center-cm
+  namespace: semen-sinapis

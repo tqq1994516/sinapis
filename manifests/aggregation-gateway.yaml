@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: aggregation-gateway
-  namespace: semen-sinapis
   labels:
     app: aggregation-gateway
+  name: aggregation-gateway
+  namespace: semen-sinapis
 spec:
   replicas: 3
   selector:
@@ -12,55 +12,74 @@ spec:
       app: aggregation-gateway
   template:
     metadata:
+      annotations:
+        dapr.io/app-id: aggregation-gateway
+        dapr.io/app-port: '80'
+        dapr.io/app-protocol: http
+        dapr.io/enabled: 'true'
+        dapr.io/log-as-json: 'true'
+        dapr.io/sidecar-liveness-probe-delay-seconds: '10'
+        dapr.io/sidecar-readiness-probe-delay-seconds: '10'
+        module.wasm.image/variant: compat-smart
       labels:
         app: aggregation-gateway
-      annotations:
-        dapr.io/enabled: "true"
-        dapr.io/app-id: "aggregation-gateway"
-        dapr.io/app-port: "80"
-        dapr.io/sidecar-liveness-probe-delay-seconds: "10"
-        dapr.io/sidecar-readiness-probe-delay-seconds: "10"
-        dapr.io/log-as-json: "true"
-        dapr.io/app-protocol: "http"
     spec:
       containers:
-        - name: aggregation-gateway
-          image: 192.168.33.48/library/semen-sinapis/aggregation-gateway:v0.0.1
-          imagePullPolicy: IfNotPresent
-          command: ["./aggregation-gateway"]
-          ports:
-            - containerPort: 80
-          env:
-            - name: ADDR
-              valueFrom:
-                configMapKeyRef:
-                  name: aggregation-gateway-cm
-                  key: ADDR
-
+      - command:
+        - ./aggregation-gateway
+        env:
+        - name: ADDR
+          valueFrom:
+            configMapKeyRef:
+              key: ADDR
+              name: aggregation-gateway-cm
+        image: 192.168.33.48/library/semen-sinapis/aggregation-gateway:v0.0.10
+        imagePullPolicy: Alaways
+        name: aggregation-gateway
+        ports:
+        - containerPort: 80
 ---
-kind: Service
 apiVersion: v1
+kind: Service
 metadata:
+  labels:
+    app: aggregation-gateway
   name: aggregation-gateway-svc
   namespace: semen-sinapis
-  labels:
-    app: aggregation-gateway
 spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
   selector:
     app: aggregation-gateway
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 80
   type: ClusterIP
-
 ---
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: aggregation-gateway-cm
-  namespace: semen-sinapis
-  labels:
-    app: aggregation-gateway
 data:
   ADDR: 0.0.0.0:80
+kind: ConfigMap
+metadata:
+  labels:
+    app: aggregation-gateway
+  name: aggregation-gateway-cm
+  namespace: semen-sinapis
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aggregation-gateway
+  namespace: semen-sinapis
+spec:
+  ingressClassName: apisix
+  rules:
+  - host: semen-sinapis.aggregation-gateway.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: aggregation-gateway
+            port:
+              number: 80
