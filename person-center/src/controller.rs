@@ -1,3 +1,4 @@
+use neo4rs::Graph;
 use volo_grpc::{Status, Request, Response};
 use sea_orm::DatabaseConnection;
 
@@ -26,9 +27,8 @@ use super::service::{
 };
 
 #[derive(Debug, Default)]
-pub struct UserService {}
+pub struct UserService;
 
-#[volo::async_trait]
 impl volo_gen::person_center::User for UserService {
 	async fn user_list(&self, req: Request<UserListReq>) -> Result<Response<UsersResponse>, Status> {
         let (_, extensions, data) = req.into_parts();
@@ -50,14 +50,16 @@ impl volo_gen::person_center::User for UserService {
 
 	async fn insert_user(&self, req: Request<InsertUserReq>) -> Result<Response<UserResponse>, Status> {
         let (_, extensions, data) = req.into_parts();
-        let db = extensions.get::<DatabaseConnection>().unwrap();
-        Ok(Response::new(insert_user_service(data, db).await.unwrap()))
+        let postgres = extensions.get::<DatabaseConnection>().unwrap();
+        let neo4j = extensions.get::<Graph>().unwrap();
+        Ok(Response::new(insert_user_service(data, postgres, neo4j).await.unwrap()))
     }
 
 	async fn delete_user(&self, req: Request<UserDetailReq>) -> Result<Response<Report>, Status> {
         let (_, extensions, data) = req.into_parts();
-        let db = extensions.get::<DatabaseConnection>().unwrap();
-        Ok(Response::new(delete_user_service(data, db).await.unwrap()))
+        let postgres = extensions.get::<DatabaseConnection>().unwrap();
+        let neo4j = extensions.get::<Graph>().unwrap();
+        Ok(Response::new(delete_user_service(data, postgres, neo4j).await.unwrap()))
     }
 
 	async fn login(&self, req: Request<LoginForm>) -> Result<Response<Logged>, Status> {

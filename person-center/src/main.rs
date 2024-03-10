@@ -1,26 +1,24 @@
-#![feature(impl_trait_in_assoc_type)]
-#![feature(async_fn_in_trait)]
+mod controller;
+mod service;
+mod helper;
+
 use volo_grpc::server::{Server, ServiceBuilder};
 use std::net::SocketAddr;
 
 use volo_gen::person_center::UserServer;
 use layer::postgres::PostgresqlLayer;
-
-mod controller;
-mod service;
-mod helper;
+use layer::neo4j::Neo4jLayer;
 
 #[volo::main]
-async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let addr: SocketAddr = std::env::var("ADDR")?.parse()?;
+async fn main() {
+    let addr: SocketAddr = "[::]:8080".parse().unwrap();
     let addr = volo::net::Address::from(addr);
 
-    let user_service = controller::UserService {};
-
     Server::new()
+        .add_service(ServiceBuilder::new(UserServer::new(controller::UserService)).build())
         .layer_front(PostgresqlLayer)
-        .add_service(ServiceBuilder::new(UserServer::new(user_service)).build())
+        .layer_front(Neo4jLayer)
         .run(addr)
-        .await?;
-    Ok(())
+        .await
+        .unwrap();
 }

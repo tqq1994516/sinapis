@@ -1,17 +1,19 @@
-use sea_orm::DatabaseConnection;
+use neo4rs::{query, Graph, Node};
 use std::error::Error;
 use sea_orm::{
-    Condition,
-    QueryOrder,
-    entity::prelude::*,
+    prelude::*,
     ActiveValue::{
-        Set,
-        NotSet,
+        NotSet, Set
     },
+    Condition,
+    DatabaseConnection,
+    QueryOrder,
+    TransactionTrait,
+    TryIntoModel,
 };
-use time::OffsetDateTime;
+use chrono::{Local, DateTime};
 
-use entity::{*, prelude::*};
+use entity::entities::{prelude::*, sea_orm_active_enums::Gender, user_info};
 use volo_gen::person_center::{
     UsersResponse,
     UserResponse,
@@ -25,7 +27,17 @@ use volo_gen::person_center::{
     CheckPermissionReq,
     Accessable,
 };
-use utils::encryption::encryption;
+use utils::{
+    cql_handle::{
+        format_cql,
+        format_id_where,
+        NodeType,
+        Operator,
+        Property,
+        UserProperties
+    },
+    encryption::encryption
+};
 use super::helper::user_model_to_user_grpc_response;
 
 pub async fn user_detail_service(
@@ -50,7 +62,7 @@ pub async fn user_list_service(
         condition = condition.add(user_info::Column::Id.eq(data.id.unwrap()));
     }
     if data.name.is_some() {
-        condition = condition.add(user_info::Column::Name.eq(String::from(data.name.unwrap())));
+        condition = condition.add(user_info::Column::Username.eq(String::from(data.name.unwrap())));
     }
     let users = UserInfo::find()
         .filter(condition)
@@ -74,22 +86,24 @@ pub async fn update_user_service(
             let id = value.id;
             let info = match &data.info {
                 Some(info) => Set(Some(serde_json::from_slice(&info.value)?)),
-                None => Set(Some(value.info.unwrap())),
+                None => Set(Some(value.extra.unwrap())),
             };
             let new_user = user_info::ActiveModel {
                 id: Set(id),
-                name: Set(data.name.unwrap_or(String::from(&value.name).into()).to_string()),
+                username: Set(data.name.unwrap_or(String::from(&value.username).into()).to_string()),
                 email: Set(Some(data.email.unwrap_or(String::from(value.email.unwrap()).into()).to_string())),
                 phone: Set(Some(data.phone.unwrap_or(String::from(value.phone.unwrap()).into()).to_string())),
-                info,
-                update_time: Set(Some(OffsetDateTime::now_utc())),
+                extra: info,
+                update_time: Set(Some(Local::now().fixed_offset())),
                 password: Set(encryption(&data.password.unwrap_or(value.password.into()))),
                 online: Set(value.online),
                 create_time: Set(value.create_time),
-                organization: Set(value.organization),
-                accessible: Set(value.accessible),
-                period_of_validity: Set(value.period_of_validity),
-                available: Set(value.available),
+                first_name: Set(value.first_name),
+                last_name: Set(value.last_name),
+                birthday: Set(value.birthday),
+                gender: Set(value.gender),
+                latest_login_time: NotSet,
+                neo4j_id: Set(value.neo4j_id),
             };
             let user = UserInfo::update(new_user)
                 .filter(user_info::Column::Id.eq(id))
@@ -103,27 +117,43 @@ pub async fn update_user_service(
 
 pub async fn insert_user_service(
     data: InsertUserReq,
-    db: &DatabaseConnection
+    postgres: &DatabaseConnection,
+    neo4j: &Graph,
 ) -> Result<UserResponse, Box<dyn Error>> {
     if let Some(info) = data.info {
         let info_value = serde_json::from_slice(&info.value)?;
+        let mut neo4j_txn = neo4j.start_txn().await?;
+        let postgres_txn = postgres.begin().await?;
+        let q = format_cql(Operator::CREATE, NodeType::USER,  Some(Property::User(UserProperties { name: data.name.to_string() })), None);
+        neo4j_txn.run(query(&q)).await?;
+        neo4j_txn.commit().await?;
+        let q = format_cql(Operator::MATCH, NodeType::USER, Some(Property::User(UserProperties { name: data.name.to_string() })), None);
+        let mut res = neo4j.execute(query(&q)).await?;
+        let mut id = 0;
+        while let Ok(Some(row)) = res.next().await {
+            id = row.get::<Node>("n")?.id();
+        }
+        let naive_datetime = DateTime::from_timestamp(data.birthday.clone().unwrap().seconds, data.birthday.unwrap().nanos as u32).unwrap().date_naive();
         let user = user_info::ActiveModel {
             id: NotSet,
-            name: Set(data.name.to_string()),
+            username: Set(data.name.to_string()),
             password: Set(encryption(&data.password)),
             email: Set(Some(data.email.unwrap_or("".into()).to_string())),
             phone: Set(Some(data.phone.unwrap_or("".into()).to_string())),
             online: Set(Some(false)),
-            info: Set(Some(info_value)),
-            create_time: Set(Some(OffsetDateTime::now_utc())),
-            update_time: Set(Some(OffsetDateTime::now_utc())),
-            organization: Set(data.organization),
-            accessible: Set(true),
-            period_of_validity: NotSet,
-            available: Set(true),
+            extra: Set(Some(info_value)),
+            create_time: Set(Some(Local::now().fixed_offset())),
+            update_time: Set(Some(Local::now().fixed_offset())),
+            first_name: Set(Some(data.first_name.unwrap_or("".into()).to_string())),
+            last_name: Set(Some(data.last_name.unwrap_or("".into()).to_string())),
+            birthday: Set(Some(naive_datetime)),
+            gender: Set(Gender::from_str(data.gender.unwrap_or("male".into()).as_str())),
+            latest_login_time: NotSet,
+            neo4j_id: Set(Some(id)),
         };
-        let user = user.insert(db).await?;
-        Ok(user_model_to_user_grpc_response(user))
+        let user = user.save(&postgres_txn).await?;
+        postgres_txn.commit().await?;
+        Ok(user_model_to_user_grpc_response(user.try_into_model()?))
     } else {
         Ok(UserResponse::default())
     }
@@ -131,9 +161,12 @@ pub async fn insert_user_service(
 
 pub async fn delete_user_service(
     data: UserDetailReq,
-    db: &DatabaseConnection
+    postgres: &DatabaseConnection,
+    neo4j: &Graph,
 ) -> Result<Report, Box<dyn Error>> {
-    let user = UserInfo::delete_by_id(data.id).exec(db).await?;
+    let user = UserInfo::delete_by_id(data.id).exec(postgres).await?;
+    let q = format_cql(Operator::DELETE, NodeType::USER, None, Some(format_id_where(vec![data.id])));
+    let _ =neo4j.execute(query(&q)).await?;
     let resp = Report {
         message: format!("user id : {:#?} is delete.", user).into(),
     };
@@ -148,7 +181,7 @@ pub async fn login_service(
         .filter(
             Condition::all()
                 .add(
-                    user_info::Column::Name.eq(data.username.to_string())
+                    user_info::Column::Username.eq(data.username.to_string())
                 )
                 .add(
                     user_info::Column::Password.eq(encryption(&data.password))
@@ -171,52 +204,52 @@ pub async fn check_permission_service(
 }
 
 // 在evaluate时考虑继承
-async fn evaluate(
-    db: &DatabaseConnection,
-    user: &user_info::Model,
-    permissions: &[permission::Model],
-    policies: &[policy::Model]
-) -> Result<bool, Box<dyn Error>> {
-    let mut allow = false;
+// async fn evaluate(
+//     db: &DatabaseConnection,
+//     user: &user_info::Model,
+//     permissions: &[permission::Model],
+//     policies: &[policy::Model]
+// ) -> Result<bool, Box<dyn Error>> {
+//     let mut allow = false;
 
-    // 递归收集主体所有角色
-    let roles = user.find_related(Role).all(db).await?;
-    let mut role_list = Vec::new();
-    role_list.extend(roles.clone());
-    let role_list = collect_roles(db, roles, &mut role_list).await?; 
+//     // 递归收集主体所有角色
+//     let roles = user.find_related(Role).all(db).await?;
+//     let mut role_list = Vec::new();
+//     role_list.extend(roles.clone());
+//     let role_list = collect_roles(db, roles, &mut role_list).await?; 
 
 
-    // 检查角色 permissions及policies
-    let role_permissions: Vec<Vec<permission::Model>> = role_list.load_many_to_many(Permission, RolePermission, db).await?;
-    for permissin_list in role_permissions {
-        for permission in permissin_list {
-            allow = permissions.iter().any(|p| p.id == permission.id);
-        }
+//     // 检查角色 permissions及policies
+//     let role_permissions: Vec<Vec<permission::Model>> = role_list.load_many_to_many(Permission, RolePermission, db).await?;
+//     for permissin_list in role_permissions {
+//         for permission in permissin_list {
+//             allow = permissions.iter().any(|p| p.id == permission.id);
+//         }
         
-    }
-    let role_policies: Vec<Vec<policy::Model>> = role_list.load_many_to_many(Policy, RolePolicy, db).await?;
-    for policy_list in role_policies {
-        for policy in policy_list {
-            allow = policies.iter().any(|p| p.id == policy.id);
-        }
-    }
-    Ok(allow)
-}
+//     }
+//     let role_policies: Vec<Vec<policy::Model>> = role_list.load_many_to_many(Policy, RolePolicy, db).await?;
+//     for policy_list in role_policies {
+//         for policy in policy_list {
+//             allow = policies.iter().any(|p| p.id == policy.id);
+//         }
+//     }
+//     Ok(allow)
+// }
 
-// 递归收集角色继承关系，在权限检查时递归合并父角色权限
-#[pilota::async_recursion::async_recursion]
-async fn collect_roles<'a>(
-    db: &'a DatabaseConnection,
-    roles: Vec<role::Model>,
-    role_list: &'a mut Vec<role::Model>
-) -> Result<&'a mut Vec<role::Model>, Box<dyn Error>> {
-    for r in roles {
-        let mut parents = r.find_linked(role::ChildParent).all(db).await?;
-        role_list.append(&mut parents);
-        let mut role_list_copy = role_list.clone();
-        let nested_parents = collect_roles(db, parents, &mut role_list_copy).await?;
-        role_list.append(nested_parents);
-    }
-    role_list.dedup();
-    Ok(role_list)
-}
+// // 递归收集角色继承关系，在权限检查时递归合并父角色权限
+// #[pilota::async_recursion::async_recursion]
+// async fn collect_roles<'a>(
+//     db: &'a DatabaseConnection,
+//     roles: Vec<role::Model>,
+//     role_list: &'a mut Vec<role::Model>
+// ) -> Result<&'a mut Vec<role::Model>, Box<dyn Error>> {
+//     for r in roles {
+//         let mut parents = r.find_linked(role::ChildParent).all(db).await?;
+//         role_list.append(&mut parents);
+//         let mut role_list_copy = role_list.clone();
+//         let nested_parents = collect_roles(db, parents, &mut role_list_copy).await?;
+//         role_list.append(nested_parents);
+//     }
+//     role_list.dedup();
+//     Ok(role_list)
+// }

@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 volo = { workspace = true }
 volo-grpc = { workspace = true }
+neo4rs = { workspace = true }
 
 nacos-sdk = { workspace = true, features = ["async"] }
 sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros", "with-time", "with-json", "postgres-array"] }

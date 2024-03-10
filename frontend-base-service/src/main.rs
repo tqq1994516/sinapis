@@ -1,5 +1,3 @@
-#![feature(impl_trait_in_assoc_type)]
-#![feature(async_fn_in_trait)]
 use volo_grpc::server::{Server, ServiceBuilder};
 use std::net::SocketAddr;
 

@@ -14,7 +14,7 @@ where
 {
     async fn call(&self, cx: &mut Cx, req: Req) -> Result<S::Response, S::Error> {
         if !cx.extensions_mut().get::<DatabaseConnection>().is_some() {
-            let db = Database::connect(std::env::var("DATABASE_URL").unwrap()).await.unwrap();
+            let db = Database::connect(std::env::var("POSTGRES_URL").unwrap()).await.unwrap();
             cx.extensions_mut().insert(db);
         }
         let resp = self.0.call(cx, req).await;

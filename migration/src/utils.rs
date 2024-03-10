@@ -9,115 +9,31 @@ impl Iden for SnowflakeId {
 }
 
 #[derive(DeriveIden)]
-pub enum Organization {
-    Table,
-    Id,
-    Name,
-    CreateTime,
-    UpdateTime,
-    Available,
-    Accessible,
-    PeriodOfValidity,
-}
-
-#[derive(DeriveIden)]
 pub enum UserInfo {
     Table,
     Id,
-    Name,
+    Username,
     Password,
+    FirstName,
+    LastName,
+    Birthday,
+    Gender,
     Email,
     Phone,
+    CreateTime,
+    UpdateTime,
+    LatestLoginTime,
     Online,
-    Info,
-    CreateTime,
-    UpdateTime,
-    Available,
-    Organization,
-    Accessible,
-    PeriodOfValidity,
+    Neo4jId,
+    Extra,
 }
 
 #[derive(DeriveIden)]
-pub enum Role {
-    Table,
-    Id,
-    Name,
-    CreateTime,
-    UpdateTime,
-    Owner,
-    Available,
-    Organization,
-}
-
-#[derive(DeriveIden)]
-pub enum Permission {
-    Table,
-    Id,
-    Name,
-    CreateTime,
-    UpdateTime,
-    Owner,
-    Available,
-    Organization,
-}
-
-#[derive(DeriveIden)]
-pub enum Policy {
-    Table,
-    Id,
-    Name,
-    ResourceType,
-    Resource,
-    Action,
-    Allow,
-    CreateTime,
-    UpdateTime,
-    Owner,
-    Available,
-    Organization,
-}
-
-#[derive(DeriveIden)]
-pub enum ResourceType {
-    Table,
-    Id,
-    Name,
-    CreateTime,
-    UpdateTime,
-    Owner,
-    Available,
-    Organization,
-}
-
-#[derive(DeriveIden)]
-pub enum UserRole {
-    Table,
-    Id,
-    User,
-    Role,
-}
-
-#[derive(DeriveIden)]
-pub enum RoleParent {
-    Table,
-    Id,
-    Child,
-    Parent,
-}
-
-#[derive(DeriveIden)]
-pub enum RolePermission {
-    Table,
-    Id,
-    Role,
-    Permission,
-}
-
-#[derive(DeriveIden)]
-pub enum RolePolicy {
-    Table,
-    Id,
-    Role,
-    Policy,
+pub enum Gender {
+    #[sea_orm(iden = "gender")]
+    Enum,
+    #[sea_orm(iden = "female")]
+    Female,
+    #[sea_orm(iden = "male")]
+    Male,
 }

@@ -1,11 +1,10 @@
-use time::OffsetDateTime;
+use chrono::{DateTime, FixedOffset};
+
 use volo_gen::google::protobuf::Timestamp;
 
-pub fn db_time_to_proto_time(db_time: OffsetDateTime) -> Timestamp {
-    let seconds = db_time.unix_timestamp();
-    let nanos = db_time.nanosecond();
+pub fn db_time_to_proto_time(db_time: DateTime<FixedOffset>) -> Timestamp {
     Timestamp {
-        seconds,
-        nanos: nanos.try_into().unwrap(),
+        seconds: db_time.timestamp(),
+        nanos: db_time.timestamp_subsec_nanos() as i32,
     }
 }

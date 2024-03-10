@@ -8,5 +8,7 @@ edition = "2021"
 [dependencies]
 volo-gen = { path = "../volo-gen" }
 
-time = { workspace = true }
+serde_json = { workspace = true }
+neo4rs = { workspace = true }
+chrono = { workspace = true }
 argon2 = { workspace = true, features = ["alloc", "password-hash"] }
