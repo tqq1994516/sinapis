@@ -12,6 +12,9 @@
 		},
 		"devwasm.azurecr.io/dev-wasm/dev-wasm-feature/rust-wasi:0": {
 			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "latest"
 		}
 	},
 	"customizations": {
