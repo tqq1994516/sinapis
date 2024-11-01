@@ -1,7 +1,5 @@
-use neo4rs::{query, Graph, Node};
 use std::error::Error;
 use sea_orm::{
-    prelude::*,
     ActiveValue::{
         NotSet, Set
     },
@@ -13,7 +11,7 @@ use sea_orm::{
 };
 use chrono::{Local, DateTime};
 
-use entity::entities::{prelude::*, sea_orm_active_enums::Gender, user_info};
+use entity::entities::{prelude::*, sea_orm_active_enums::Gender, user_property};
 use volo_gen::person_center::{
     UsersResponse,
     UserResponse,
@@ -28,14 +26,6 @@ use volo_gen::person_center::{
     Accessable,
 };
 use utils::{
-    cql_handle::{
-        format_cql,
-        format_id_where,
-        NodeType,
-        Operator,
-        Property,
-        UserProperties
-    },
     encryption::encryption
 };
 use super::helper::user_model_to_user_grpc_response;

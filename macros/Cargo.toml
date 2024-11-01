@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 syn = "2"
 quote = "1"
-sea-orm = { version = "0", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
+sea-orm = { version = "1", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
 
 [lib]
 proc-macro = true

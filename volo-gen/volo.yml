@@ -2,10 +2,24 @@ entries:
   default:
     protocol: protobuf
     filename: volo_gen.rs
-    idls:
-    - source: local
-      path: ../proto/user.proto
-      includes:
-      - ../proto
-    touch_all: false
-    nonstandard_snake_case: false
+    services:
+    - idl:
+        source: local
+        path: ../proto/user.proto
+        includes:
+        - ../proto
+    - idl:
+        source: local
+        path: ../proto/user_attribute.proto
+        includes:
+        - ../proto
+    - idl:
+        source: local
+        path: ../proto/association.proto
+        includes:
+        - ../proto
+    - idl:
+        source: local
+        path: ../proto/frontend_base_service.proto
+        includes:
+        - ../proto

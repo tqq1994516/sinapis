@@ -9,23 +9,17 @@ impl Iden for SnowflakeId {
 }
 
 #[derive(DeriveIden)]
-pub enum UserInfo {
+pub enum UserProperty {
     Table,
     Id,
-    Username,
+    Name,
     Password,
-    FirstName,
-    LastName,
-    Birthday,
-    Gender,
+    Alias,
     Email,
     Phone,
-    CreateTime,
-    UpdateTime,
-    LatestLoginTime,
-    Online,
-    Neo4jId,
     Extra,
+    CreatedAt,
+    UpdatedAt,
 }
 
 #[derive(DeriveIden)]

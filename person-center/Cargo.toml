@@ -15,7 +15,6 @@ volo = { workspace = true }
 volo-grpc = { workspace = true }
 serde_json = { workspace = true }
 pilota = { workspace = true }
-neo4rs = { workspace = true }
 chrono = { workspace = true }
 
 sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros", "with-time", "with-json", "postgres-array"] }

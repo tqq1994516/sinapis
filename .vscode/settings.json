@@ -383,5 +383,8 @@
             "multiline": true
         }
     ],
-    "rust-analyzer.showUnlinkedFileNotification": false
+    "rust-analyzer.cargo.features": [
+        "aggregation_gateway/ssr",
+        "aggregation_gateway/hydrate"
+    ]
 }

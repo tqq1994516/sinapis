@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package person_center;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+import "universal.proto";
+
+message AddUserAttributeRequest {
+    string name = 1;
+
+    map<string, string> properties = 10;
+}
+
+message EditUserAttributeRequest {
+    int64 user_attribute_id = 1;
+    string name = 2;
+
+    map<string, string> properties = 10;
+}
+
+message FilterAttributeRequest {
+    optional int64 origin_id = 2;
+    optional string name = 3;
+    optional int64 target_id = 4;
+
+    map<string, string> properties = 10;
+}
+
+message PreciseAttributeRequest {
+    int64 target_id = 4;
+}
+
+message UserAttributeInfo {
+    string name = 1;
+
+    map<string, string> extra = 10;
+}
+
+message GetUserAttributeResponse {
+    int64 id = 1;
+    UserAttributeInfo user_attribute = 2;
+}
+
+message GetUserAttributesResponse {
+    repeated GetUserAttributeResponse user_attributes = 1;
+}
+
+service UserAttributeService {
+    rpc AddUserAttribute(AddUserAttributeRequest) returns (GetUserAttributeResponse);
+    rpc EditUserAttribute(EditUserAttributeRequest) returns (GetUserAttributeResponse);
+    rpc FilterUserAttribute(FilterAttributeRequest) returns (GetUserAttributesResponse);
+    rpc RemoveUserAttribute(PreciseAttributeRequest) returns (Accessable);
+}

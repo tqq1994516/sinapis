@@ -7,69 +7,47 @@ import "google/protobuf/any.proto";
 import "universal.proto";
 
 service User {
-    rpc UserList (UserListReq) returns (UsersResponse);
-    rpc UserDetail (UserDetailReq) returns (UserResponse);
-    rpc UpdateUser (UpdateUserReq) returns (UserResponse);
-    rpc InsertUser (InsertUserReq) returns (UserResponse);
-    rpc DeleteUser (UserDetailReq) returns (Report);
+    rpc UserList (FilterUserRequest) returns (UsersResponse);
+    rpc UserDetail (UserDetailRequest) returns (UserResponse);
+    rpc UpdateUser (EditUserRequest) returns (UserResponse);
+    rpc InsertUser (UserInfo) returns (UserResponse);
+    rpc DeleteUser (UserDetailRequest) returns (Accessable);
     rpc Login (LoginForm) returns (Logged);
-    rpc CheckPermission (CheckPermissionReq) returns (Accessable);
+    rpc CheckPermission (CheckPermissionRequest) returns (Accessable);
 }
 
-message UserListReq {
+message FilterUserRequest {
     optional int64 id = 1;
     optional string name = 2;
-    int64 organization = 3;
-}
-
-message UserDetailReq {
-    int64 id = 1;
-    int64 organization = 2;
-}
-
-message UpdateUserReq {
-    int64 id = 1;
-    optional string name = 2;
-    optional string password = 3;
-    optional string email = 4;
-    optional string phone = 5;
-    optional string first_name = 6;
-    optional string last_name = 7;
-    optional google.protobuf.Timestamp birthday = 8;
-    optional string gender = 9;
-    optional google.protobuf.Any info = 10;
-    int64 organization = 11;
-}
-
-message InsertUserReq {
-    string name = 1;
-    string password = 2;
     optional string email = 3;
     optional string phone = 4;
-    optional string first_name = 5;
-    optional string last_name = 6;
-    optional google.protobuf.Timestamp birthday = 7;
-    optional string gender = 8;
-    optional google.protobuf.Any info = 9;
-    int64 organization = 10;
+}
+
+message UserDetailRequest {
+    int64 id = 1;
+}
+
+message EditUserRequest {
+    int64 id = 1;
+    optional string alias = 2;
+    optional string email = 3;
+    optional string phone = 4;
+
+    map<string, string> extra = 10;
+}
+
+message UserInfo {
+    string name = 1;
+    optional string alias = 2;
+    optional string email = 3;
+    optional string phone = 4;
+
+    map<string, string> extra = 10;
 }
 
 message UserResponse {
     int64 id = 1;
-    string name = 2;
-    string password = 3;
-    string email = 4;
-    string phone = 5;
-    bool online = 6;
-    google.protobuf.Any info = 7;
-    google.protobuf.Timestamp create_time = 8;
-    google.protobuf.Timestamp update_time = 9;
-    string first_name = 10;
-    string last_name = 11;
-    google.protobuf.Timestamp birthday = 12;
-    string gender = 13;
-    google.protobuf.Timestamp latest_login_time = 14;
-    int64 organization = 15;
+    UserInfo user = 2;
 }
 
 message UsersResponse {
@@ -86,7 +64,7 @@ message Logged {
     string refresh_token = 2;
 }
 
-message CheckPermissionReq {
+message CheckPermissionRequest {
     int64 user_id = 1;
     int64 resource_id = 2;
 }

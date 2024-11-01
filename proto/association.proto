@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package person_center;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+import "universal.proto";
+
+message Association {
+    int64 parent_id = 1;
+    int64 child_id = 2;
+}
+
+message ResetAssociationRequest {
+    int64 origin_id = 1;
+    int64 old_target_id = 2;
+    int64 new_target_id = 3;
+}
+
+service RelationshipService {
+    rpc AddAssociation(Association) returns (Accessable);
+    rpc RemoveAssociation(Association) returns (Accessable);
+    rpc UpdateAssociation(ResetAssociationRequest) returns (Accessable);
+}
