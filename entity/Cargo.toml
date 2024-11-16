@@ -16,5 +16,6 @@ tokio-postgres = { workspace = true }
 serde = { workspace = true, features = ["rc", "derive"] }
 sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-tokio-rustls", "macros", "with-chrono", "with-json", "postgres-array"] }
 tokio = { workspace = true, features = ["full"] }
+chrono = { workspace = true, features = ["serde"] }
 
 pool = { path = "../pool" }

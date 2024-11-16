@@ -13,6 +13,7 @@ http-body = { workspace = true }
 bytes = { workspace = true }
 pin-project = { workspace = true }
 anyhow = { workspace = true }
+lazy_static = { workspace = true }
 
 tower = { workspace = true, features = ["util"] }
 nacos-sdk = { workspace = true, features = ["async"] }
@@ -25,5 +26,8 @@ sea-orm = { workspace = true, features = [
     "postgres-array",
 ] }
 tokio = { workspace = true, features = ["full"] }
+chrono = { workspace = true, features = ["serde"] }
+jsonwebtoken = { workspace = true, features = ["use_pem"] }
+cookie = { workspace = true, features = ["secure", "percent-encode"] }
 
 entity = { path = "../entity" }

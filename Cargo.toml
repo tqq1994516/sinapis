@@ -17,11 +17,13 @@ members = [
     "utils",
     "volo-gen",
     "person-center",
-    "aggregation-gateway",
     "frontend-base-service",
     "idgen",
     "pool",
 ]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
 
 [[bin]]
 name = "person-center"
@@ -35,55 +37,196 @@ path = "aggregation-gateway/src/main.rs"
 name = "frontend-base-service"
 path = "frontend-base-service/src/main.rs"
 
+[[bin]]
+name = "semen-sinapis"
+path = "src/main.rs"
+
+[features]
+hydrate = ["leptos/hydrate", "thaw/hydrate"]
+ssr = [
+    "dep:axum",
+    "dep:tokio",
+    "dep:tower",
+    "dep:tower-http",
+    "dep:leptos_axum",
+    "leptos/ssr",
+    "leptos_meta/ssr",
+    "leptos_router/ssr",
+    "thaw/ssr",
+    "dep:tracing",
+]
+
+[dependencies]
+serde_json = "*"
+console_error_panic_hook = "*"
+dapr = "*"
+anyhow = "*"
+mime = "*"
+axum-macros = "*"
+pilota = "*"
+prost-types = "*"
+leptos_meta = "0.7.0-rc1"
+tower-service = "*"
+tower-layer = "*"
+futures = "*"
+wasm-bindgen = "*"
+thiserror = "*"
+http = "*"
+chrono = "*"
+jsonwebtoken = "*"
+bytes = "*"
+http-body = "*"
+forwarded-header-value = "*"
+leptos-use = "0.14.0-rc2"
+
+serde = { version = "*", features = ["derive"] }
+utoipa = { version = "*", features = ["axum_extras"] }
+utoipa-swagger-ui = { version = "*", features = ["axum"] }
+leptos = { version = "0.7.0-rc1", features = ["nightly", "experimental-islands"] }
+axum = { version = "*", optional = true }
+leptos_axum = { version = "0.7.0-rc1", optional = true }
+leptos_router = { version = "0.7.0-rc1", features = ["nightly"] }
+tokio = { version = "*", optional = true }
+tower = { version = "*", optional = true, features = ["util"] }
+tower-http = { version = "*", features = ["fs"], optional = true }
+tracing = { version = "*", optional = true }
+uuid = { version = "*", features = ["serde", "v4"] }
+cookie = { version = "*", features = ["percent-encode", "private"] }
+redis-om = { version = "*", features = ["tokio-comp", "json"] }
+sea-orm = { version = "*", features = [
+    "sqlx-postgres",
+    "runtime-tokio-rustls",
+    "postgres-array",
+    "macros",
+] }
+thaw = { git = "https://github.com/thaw-ui/thaw.git", optional = true }
+
+idgen = { path = "idgen" }
+layer = { path = "layer" }
+volo-gen = { path = "volo-gen" }
+
 [workspace.dependencies]
-dapr = "0"
-volo = "0"
+dapr = "*"
+volo = "*"
 volo-grpc = "0"
 volo-build = "0"
 anyhow = "1"
 async-trait = "0"
-futures = "0"
-pilota = "0"
-mime = "0"
+futures = "*"
+pilota = "*"
+mime = "*"
 serde = "1"
-serde_yaml = "0.9"
-serde_json = "1"
-tracing = "0"
-prost-types = "0"
-chrono = "0"
-console_error_panic_hook = "0"
-tower-service = "0"
-tower-layer = "0"
-tower = "0.5"
-tower-http = "0.6"
+serde_yaml = "*"
+serde_json = "*"
+tracing = "*"
+prost-types = "*"
+chrono = "*"
+console_error_panic_hook = "*"
+tower-service = "*"
+tower-layer = "*"
+tower = "*"
+tower-http = "*"
 wasm-bindgen = "0.2.93"
-thiserror = "1"
-http = "1"
-jsonwebtoken = "9"
-bytes = "1"
-http-body = "1"
-forwarded-header-value = "0.1"
-apache_age = "0.6"
-tokio-postgres = "0.7"
-dotenv = "0.15"
-sonic-rs = "0.3"
-lazy_static = "1"
-tracing-subscriber = "0.3"
-axum = "0"
-axum-macros = "0"
-leptos = "0.7.0-rc0"
-leptos_axum = "0.7.0-rc0"
-leptos_meta = "0.7.0-rc0"
-leptos_router = "0.7.0-rc0"
-leptos-use = { git = "https://github.com/Synphonyte/leptos-use.git", branch = "leptos-0.7" }
-utoipa = "5"
-utoipa-swagger-ui = "8"
-sea-orm = "1"
-tokio = "1"
-argon2 = "0"
-nacos-sdk = "0"
-uuid = "1"
-cookie = "0.18"
-redis-om = "0.1"
-bb8 = "0.8"
-pin-project = "1"
+thiserror = "*"
+http = "*"
+jsonwebtoken = "*"
+bytes = "*"
+http-body = "*"
+forwarded-header-value = "*"
+apache_age = "*"
+tokio-postgres = "*"
+dotenv = "*"
+sonic-rs = "*"
+lazy_static = "*"
+tracing-subscriber = "*"
+axum = "*"
+axum-macros = "*"
+leptos = "0.7.0-rc1"
+leptos_axum = "0.7.0-rc1"
+leptos_meta = "0.7.0-rc1"
+leptos_router = "0.7.0-rc1"
+leptos-use = "0.14.0-rc2"
+utoipa = "*"
+utoipa-swagger-ui = "*"
+sea-orm = "*"
+tokio = "*"
+argon2 = "*"
+nacos-sdk = "*"
+uuid = "*"
+cookie = "*"
+redis-om = "*"
+bb8 = "*"
+pin-project = "*"
+sodiumoxide = "*"
+
+# Defines a size-optimized profile for the WASM bundle in release mode
+[profile.wasm-release]
+inherits = "release"
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[package.metadata.leptos]
+# The name used by wasm-bindgen/cargo-leptos for the JS/WASM bundle. Defaults to the crate name
+output-name = "semen-sinapis"
+
+# The site root folder is where cargo-leptos generate all output. WARNING: all content of this folder will be erased on a rebuild. Use it in your server setup.
+site-root = "target/site"
+
+# The site-root relative folder where all compiled output (JS, WASM and CSS) is written
+# Defaults to pkg
+site-pkg-dir = "pkg"
+
+# [Optional] The source CSS file. If it ends with .sass or .scss then it will be compiled by dart-sass into CSS. The CSS is optimized by Lightning CSS before being written to <site-root>/<site-pkg>/app.css
+style-file = "style/tailwind.css"
+# Assets source dir. All files found here will be copied and synchronized to site-root.
+# The assets-dir cannot have a sub directory with the same name/path as site-pkg-dir.
+#
+# Optional. Env: LEPTOS_ASSETS_DIR.
+assets-dir = "public"
+
+# The IP and port (ex: 127.0.0.1:3000) where the server serves the content. Use it in your server setup.
+site-addr = "127.0.0.1:3000"
+
+# The port to use for automatic reload monitoring
+reload-port = 3001
+
+# [Optional] Command to use when running end2end tests. It will run in the end2end dir.
+#   [Windows] for non-WSL use "npx.cmd playwright test"
+#   This binary name can be checked in Powershell with Get-Command npx
+end2end-cmd = "npx playwright test"
+end2end-dir = "end2end"
+
+#  The browserlist query used for optimizing the CSS.
+browserquery = "defaults"
+
+# The environment Leptos will run in, usually either "DEV" or "PROD"
+env = "DEV"
+
+# The features to use when compiling the bin target
+#
+# Optional. Can be over-ridden with the command line parameter --bin-features
+bin-features = ["ssr"]
+
+# If the --no-default-features flag should be used when compiling the bin target
+#
+# Optional. Defaults to false.
+bin-default-features = false
+
+# The features to use when compiling the lib target
+#
+# Optional. Can be over-ridden with the command line parameter --lib-features
+lib-features = ["hydrate"]
+
+# If the --no-default-features flag should be used when compiling the lib target
+#
+# Optional. Defaults to false.
+lib-default-features = false
+
+# The profile to use for the lib target when compiling for release
+#
+# Optional. Defaults to "release".
+lib-profile-release = "wasm-release"
+
+bin-target = "semen-sinapis"
