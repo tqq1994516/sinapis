@@ -1,26 +1,16 @@
-// use pool::dapr::person_center::GrpcClientManager;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use chrono::prelude::*;
 
-// pub struct Middleware {
-//     dapr_grpc_client: GrpcClientManager,
-// }
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Claims {
+#[derive(Deserialize, Serialize, Debug, PartialEq, Eq)]
+pub struct Account {
+    pub user_id: i64,
     pub snow_id: i64,
-    pub aud: String,
-    #[serde(with = "jwt_numeric_date")]
+    pub refresh_token: String,
+    #[serde(with = "jwt_str_date")]
     pub exp: DateTime<Utc>,
-    #[serde(with = "jwt_numeric_date")]
-    pub iat: DateTime<Utc>,
-    pub iss: String,
-    #[serde(with = "jwt_numeric_date")]
-    pub nbf: DateTime<Utc>,
-    pub sub: i64,
 }
 
-mod jwt_numeric_date {
+mod jwt_str_date {
     use chrono::prelude::*;
     use serde::{self, Deserialize, Deserializer, Serializer};
 
@@ -28,7 +18,7 @@ mod jwt_numeric_date {
     where
         S: Serializer,
     {
-        serializer.serialize_i64(date.timestamp())
+        serializer.serialize_str(&date.timestamp().to_string())
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<DateTime<Utc>, D::Error>

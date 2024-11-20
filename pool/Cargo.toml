@@ -5,10 +5,11 @@ edition = "2021"
 
 [dependencies]
 bb8 = { workspace = true }
-volo = { workspace = true }
-dapr = { workspace = true }
+redis = {workspace = true, features = ["aio", "json"] }
+# volo = { workspace = true }
+# dapr = { workspace = true }
 axum = { workspace = true }
 
-tokio = { workspace = true, features = ["full"] }
+# tokio = { workspace = true, features = ["full"] }
 
-volo-gen = { path = "../volo-gen" }
+# volo-gen = { path = "../volo-gen" }

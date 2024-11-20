@@ -1,4 +1,4 @@
-use idgen::NextId;
+// use idgen::NextId;
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
@@ -71,9 +71,8 @@ fn GetId() -> impl IntoView {
 }
 
 #[server]
-#[middleware(crate::middleware::AuthLayer)]
 pub async fn get_snow_id() -> Result<i64, ServerFnError> {
-    println!("2. Running server function.");
     // leptos_axum::redirect("/");
-    Ok(NextId())
+    // Ok(NextId())
+    Ok(1)
 }

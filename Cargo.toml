@@ -3,8 +3,8 @@ name = "semen-sinapis"
 version = "0.1.0"
 edition = "2021"
 
-[profile.dev]
-build-override.debug = true
+[profile.dev.build-override]
+debug = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [workspace]
@@ -42,80 +42,69 @@ name = "semen-sinapis"
 path = "src/main.rs"
 
 [features]
-hydrate = ["leptos/hydrate", "thaw/hydrate"]
+hydrate = ["leptos/hydrate", "thaw/hydrate", "thaw/nightly"]
 ssr = [
-    "dep:axum",
+    "dep:tracing",
     "dep:tokio",
+    "dep:axum",
     "dep:tower",
     "dep:tower-http",
     "dep:leptos_axum",
+    "dep:dotenv",
     "leptos/ssr",
     "leptos_meta/ssr",
     "leptos_router/ssr",
     "thaw/ssr",
-    "dep:tracing",
+    "thaw/nightly",
+    "leptos-use/ssr",
+    "dep:layer",
 ]
 
 [dependencies]
 serde_json = "*"
 console_error_panic_hook = "*"
-dapr = "*"
 anyhow = "*"
-mime = "*"
-axum-macros = "*"
-pilota = "*"
-prost-types = "*"
 leptos_meta = "0.7.0-rc1"
-tower-service = "*"
-tower-layer = "*"
 futures = "*"
 wasm-bindgen = "*"
 thiserror = "*"
-http = "*"
 chrono = "*"
 jsonwebtoken = "*"
-bytes = "*"
-http-body = "*"
 forwarded-header-value = "*"
-leptos-use = "0.14.0-rc2"
 
 serde = { version = "*", features = ["derive"] }
-utoipa = { version = "*", features = ["axum_extras"] }
-utoipa-swagger-ui = { version = "*", features = ["axum"] }
-leptos = { version = "0.7.0-rc1", features = ["nightly", "experimental-islands"] }
+leptos = { version = "0.7.0-rc1", features = [
+    "nightly",
+    "experimental-islands",
+] }
 axum = { version = "*", optional = true }
 leptos_axum = { version = "0.7.0-rc1", optional = true }
 leptos_router = { version = "0.7.0-rc1", features = ["nightly"] }
-tokio = { version = "*", optional = true }
+tokio = { version = "*", features = ["rt-multi-thread"], optional = true }
 tower = { version = "*", optional = true, features = ["util"] }
 tower-http = { version = "*", features = ["fs"], optional = true }
 tracing = { version = "*", optional = true }
 uuid = { version = "*", features = ["serde", "v4"] }
 cookie = { version = "*", features = ["percent-encode", "private"] }
-redis-om = { version = "*", features = ["tokio-comp", "json"] }
-sea-orm = { version = "*", features = [
-    "sqlx-postgres",
-    "runtime-tokio-rustls",
-    "postgres-array",
-    "macros",
-] }
 thaw = { git = "https://github.com/thaw-ui/thaw.git", optional = true }
+leptos-use = { version = "0.14.0-rc2", optional = true }
+dotenv = { version = "*", optional = true }
 
-idgen = { path = "idgen" }
-layer = { path = "layer" }
-volo-gen = { path = "volo-gen" }
+# idgen = { path = "idgen" }
+layer = { path = "layer", optional = true }
+# volo-gen = { path = "volo-gen" }
 
 [workspace.dependencies]
-dapr = "*"
+# dapr = "*"
 volo = "*"
-volo-grpc = "0"
-volo-build = "0"
-anyhow = "1"
-async-trait = "0"
+volo-grpc = "*"
+volo-build = "*"
+anyhow = "*"
+async-trait = "*"
 futures = "*"
 pilota = "*"
 mime = "*"
-serde = "1"
+serde = "*"
 serde_yaml = "*"
 serde_json = "*"
 tracing = "*"
@@ -154,8 +143,9 @@ argon2 = "*"
 nacos-sdk = "*"
 uuid = "*"
 cookie = "*"
-redis-om = "*"
 bb8 = "*"
+redis = "*"
+bb8-redis = "*"
 pin-project = "*"
 sodiumoxide = "*"
 
@@ -187,7 +177,7 @@ style-file = "style/tailwind.css"
 assets-dir = "public"
 
 # The IP and port (ex: 127.0.0.1:3000) where the server serves the content. Use it in your server setup.
-site-addr = "127.0.0.1:3000"
+site-addr = "0.0.0.0:3008"
 
 # The port to use for automatic reload monitoring
 reload-port = 3001

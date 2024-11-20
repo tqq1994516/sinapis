@@ -8,16 +8,17 @@ use chrono::Utc;
 use std::sync::Mutex;
 use std::sync::Arc;
 use std::borrow::BorrowMut;
-use crate::idgen::*;
+
+use super::snow_worker::SnowWorker;
 
 // static mut instance2: Option<Arc<Mutex<SnowWorkerM1>>> = None;
 
 pub struct DefaultIdGenerator {
-    pub Worker: SnowWorkerM1,
+    pub Worker: SnowWorker,
 }
 
 impl DefaultIdGenerator {
     pub fn Default() -> DefaultIdGenerator {
-        DefaultIdGenerator { Worker: SnowWorkerM1::Default() }
+        DefaultIdGenerator { Worker: SnowWorker::Default() }
     }
 }

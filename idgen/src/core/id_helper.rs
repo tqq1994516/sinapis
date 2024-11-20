@@ -4,7 +4,9 @@
  */
 use std::sync::Mutex;
 use std::sync::Arc;
-use crate::idgen::*;
+
+use super::DefaultIdGenerator;
+use super::IdGeneratorOptions;
 
 pub struct YitIdHelper;
 

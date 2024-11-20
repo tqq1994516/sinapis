@@ -6,16 +6,23 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-apache_age = { workspace = true }
-sonic-rs = { workspace = true }
-serde_json = { workspace = true }
-pilota = { workspace = true }
-volo-grpc = { workspace = true }
-tokio-postgres = { workspace = true }
+# apache_age = { workspace = true }
+# sonic-rs = { workspace = true }
+# serde_json = { workspace = true }
+# pilota = { workspace = true }
+# volo-grpc = { workspace = true }
+# tokio-postgres = { workspace = true }
 
 serde = { workspace = true, features = ["rc", "derive"] }
-sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-tokio-rustls", "macros", "with-chrono", "with-json", "postgres-array"] }
-tokio = { workspace = true, features = ["full"] }
+sea-orm = { workspace = true, features = [
+    "sqlx-postgres",
+    "runtime-tokio-rustls",
+    "macros",
+    "with-chrono",
+    "with-json",
+    "postgres-array",
+] }
+# tokio = { workspace = true, features = ["full"] }
 chrono = { workspace = true, features = ["serde"] }
 
-pool = { path = "../pool" }
+# pool = { path = "../pool" }

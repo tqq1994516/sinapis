@@ -2,12 +2,14 @@
 #[tokio::main]
 async fn main() {
     use axum::{Router, middleware};
-    use leptos::prelude::*;
+    use leptos::{logging::log, prelude::*};
     use leptos_axum::{generate_route_list, LeptosRoutes};
-    use idgen::{IdGeneratorOptions, YitIdHelper};
-    use layer::{auth::auth_middleware, middleware::get_sea_orm_connect_extension};
+    // use idgen::{IdGeneratorOptions, YitIdHelper};
+    use layer::{auth::auth_middleware, middleware::{sea_orm_connect_extension, redis_connect_extension}};
+    let project_dir = std::env::current_dir().unwrap();
+    dotenv::from_path(project_dir.join("entity").join(".env")).unwrap();
 
-    use super::app::*;
+    use semen_sinapis::app::*;
 
     let conf = get_configuration(None).unwrap();
     let addr = conf.leptos_options.site_addr;
@@ -15,17 +17,18 @@ async fn main() {
     // Generate the list of routes in your Leptos App
     let routes = generate_route_list(App);
 
-    let mut options = IdGeneratorOptions::New(1);
-    options.WorkerIdBitLength = 6;
-    options.SeqBitLength = 10;
-    YitIdHelper::SetIdGenerator(options);
+    // let mut options = IdGeneratorOptions::New(1);
+    // options.WorkerIdBitLength = 6;
+    // options.SeqBitLength = 10;
+    // YitIdHelper::SetIdGenerator(options);
 
     let app = Router::new()
         .leptos_routes(&leptos_options, routes, {
             let leptos_options = leptos_options.clone();
             move || shell(leptos_options.clone())
         })
-        .layer(get_sea_orm_connect_extension().await)
+        .layer(redis_connect_extension().await)
+        .layer(sea_orm_connect_extension().await)
         .layer(middleware::from_fn(auth_middleware))
         .fallback(leptos_axum::file_and_error_handler(shell))
         .with_state(leptos_options);

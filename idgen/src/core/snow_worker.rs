@@ -2,11 +2,12 @@
  * 版权属于：yitter(yitter@126.com)
  * 开源地址：https://github.com/yitter/idgenerator
  */
-use crate::idgen::*;
 use chrono::Utc;
 use std::thread::sleep;
 
-pub struct SnowWorkerM1 {
+use super::{IdGeneratorOptions, OverCostActionArg};
+
+pub struct SnowWorker {
     ///基础时间
     pub BaseTime: i64,
     ///机器码
@@ -33,10 +34,10 @@ pub struct SnowWorkerM1 {
     _TermIndex: u32,
 }
 
-impl SnowWorkerM1 {
-    pub fn Default() -> SnowWorkerM1 {
+impl SnowWorker {
+    pub fn Default() -> SnowWorker {
         let options = IdGeneratorOptions::New(1);
-        return SnowWorkerM1::New(options);
+        return SnowWorker::New(options);
     }
 
     pub fn SetOptions(&mut self, options: IdGeneratorOptions) {
@@ -129,8 +130,8 @@ impl SnowWorkerM1 {
         }
     }
 
-    pub fn New(options: IdGeneratorOptions) -> SnowWorkerM1 {
-        let mut worker = SnowWorkerM1 {
+    pub fn New(options: IdGeneratorOptions) -> SnowWorker {
+        let mut worker = SnowWorker {
             BaseTime: 1582136402000,
             WorkerIdBitLength: 0,
             WorkerId: 0,
