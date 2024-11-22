@@ -1,10 +1,12 @@
 // use idgen::NextId;
-use leptos::prelude::*;
+use leptos::{prelude::*, task::spawn_local};
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
     components::{Route, Router, Routes},
     StaticSegment,
 };
+use leptos_use::storage::{use_local_storage_with_options, UseStorageOptions};
+use codee::string::FromToStringCodec;
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
     view! {
@@ -32,7 +34,7 @@ pub fn App() -> impl IntoView {
     view! {
         // injects a stylesheet into the document <head>
         // id=leptos means cargo-leptos will hot-reload this stylesheet
-        <Stylesheet id="leptos" href="/pkg/aggregation_gateway.css"/>
+        <Stylesheet id="leptos" href="/pkg/semen-sinapis.css"/>
 
         // sets the document title
         <Title text="Welcome to Leptos"/>
@@ -60,19 +62,61 @@ fn HomePage() -> impl IntoView {
 #[island]
 fn GetId() -> impl IntoView {
     // Creates a reactive value to update the button
-    let action = ServerAction::<GetSnowId>::new();
+    let (user_id, set_user_id, _) = use_local_storage_with_options::<i64, FromToStringCodec>(
+        "user_id",
+        UseStorageOptions::default().delay_during_hydration(true),
+    );
+    let login_action = ServerAction::<Login>::new();
+
+    // let access = Resource::new(move || login_action.value().get(), move |u| access(u.map_or(0, |iu| iu.unwrap_or(0))));
 
     view! {
-        <ActionForm action>
-            <button>Submit</button>
-            <p>The result was: {move || format!("{:?}", action.value().get())}</p>
-        </ActionForm>
+        <button on:click=move |_| {
+            spawn_local(async {
+                let res = login().await;
+                if let Ok(res) = res {
+                    println!("{}", res);
+                    // let (_, set_user_id, _) = use_local_storage_with_options::<i64, FromToStringCodec>(
+                    //     "user_id",
+                    //     UseStorageOptions::default().delay_during_hydration(true),
+                    // );
+                    // set_user_id(res);
+                    let _ = access(res).await;
+                };
+            });
+        }>login</button>
     }
 }
 
 #[server]
-pub async fn get_snow_id() -> Result<i64, ServerFnError> {
-    // leptos_axum::redirect("/");
+pub async fn login() -> Result<i64, ServerFnError> {
     // Ok(NextId())
-    Ok(1)
+    use axum::Extension;
+    use leptos_axum::{extract, redirect};
+    use sea_orm::DatabaseConnection;
+    use sea_orm::EntityTrait;
+
+    use entity::entities::user_property;
+
+    redirect("/");
+    let pg_conn: Extension<DatabaseConnection> = extract().await?;
+    match user_property::Entity::find_by_id(1).one(&pg_conn.0).await? {
+        Some(user) => Ok(user.id),
+        None => Ok(0),
+    }
+}
+
+#[server]
+pub async fn access(user_id: i64) -> Result<(), ServerFnError> {
+    use leptos_axum::ResponseOptions;
+    use axum::http::StatusCode;
+
+    // pull ResponseOptions from context
+    let response = expect_context::<ResponseOptions>();
+
+    // set the HTTP status code
+    response.set_status(StatusCode::ACCEPTED);
+    println!("{}", user_id);
+
+    Ok(())
 }

@@ -12,6 +12,7 @@ edition = "2021"
 # pilota = { workspace = true }
 # volo-grpc = { workspace = true }
 # tokio-postgres = { workspace = true }
+regex = { workspace = true }
 
 serde = { workspace = true, features = ["rc", "derive"] }
 sea-orm = { workspace = true, features = [

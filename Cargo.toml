@@ -42,7 +42,7 @@ name = "semen-sinapis"
 path = "src/main.rs"
 
 [features]
-hydrate = ["leptos/hydrate", "thaw/hydrate", "thaw/nightly"]
+hydrate = ["leptos/hydrate", "thaw/hydrate"]
 ssr = [
     "dep:tracing",
     "dep:tokio",
@@ -51,13 +51,15 @@ ssr = [
     "dep:tower-http",
     "dep:leptos_axum",
     "dep:dotenv",
+    "dep:sea-orm",
     "leptos/ssr",
     "leptos_meta/ssr",
     "leptos_router/ssr",
     "thaw/ssr",
-    "thaw/nightly",
     "leptos-use/ssr",
+    "leptos-use/axum",
     "dep:layer",
+    "dep:entity",
 ]
 
 [dependencies]
@@ -71,6 +73,8 @@ thiserror = "*"
 chrono = "*"
 jsonwebtoken = "*"
 forwarded-header-value = "*"
+regex = "*"
+codee = "*"
 
 serde = { version = "*", features = ["derive"] }
 leptos = { version = "0.7.0-rc1", features = [
@@ -86,12 +90,21 @@ tower-http = { version = "*", features = ["fs"], optional = true }
 tracing = { version = "*", optional = true }
 uuid = { version = "*", features = ["serde", "v4"] }
 cookie = { version = "*", features = ["percent-encode", "private"] }
-thaw = { git = "https://github.com/thaw-ui/thaw.git", optional = true }
-leptos-use = { version = "0.14.0-rc2", optional = true }
+thaw = { git = "https://github.com/thaw-ui/thaw.git", features = ["nightly"], optional = true }
+leptos-use = { version = "0.14.0-rc3" }
 dotenv = { version = "*", optional = true }
+sea-orm = { version = "*", optional = true, features = [
+    "sqlx-postgres",
+    "runtime-tokio-native-tls",
+    "macros",
+    "with-time",
+    "with-json",
+    "postgres-array",
+] }
 
 # idgen = { path = "idgen" }
 layer = { path = "layer", optional = true }
+entity = { path = "entity", optional = true }
 # volo-gen = { path = "volo-gen" }
 
 [workspace.dependencies]
@@ -115,7 +128,7 @@ tower-service = "*"
 tower-layer = "*"
 tower = "*"
 tower-http = "*"
-wasm-bindgen = "0.2.93"
+wasm-bindgen = "*"
 thiserror = "*"
 http = "*"
 jsonwebtoken = "*"
@@ -134,7 +147,7 @@ leptos = "0.7.0-rc1"
 leptos_axum = "0.7.0-rc1"
 leptos_meta = "0.7.0-rc1"
 leptos_router = "0.7.0-rc1"
-leptos-use = "0.14.0-rc2"
+leptos-use = "0.14.0-rc3"
 utoipa = "*"
 utoipa-swagger-ui = "*"
 sea-orm = "*"
@@ -148,6 +161,7 @@ redis = "*"
 bb8-redis = "*"
 pin-project = "*"
 sodiumoxide = "*"
+regex = "*"
 
 # Defines a size-optimized profile for the WASM bundle in release mode
 [profile.wasm-release]
