@@ -15,7 +15,8 @@
 		},
 		"ghcr.io/devcontainers/features/node:1": {
 			"version": "latest"
-		}
+		},
+		"ghcr.io/lee-orr/rusty-dev-containers/wasmcloud:0": {}
 	},
 	"customizations": {
 		// Configure properties specific to VS Code.
