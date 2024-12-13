@@ -10,12 +10,24 @@ entity = { path = "../entity" }
 utils = { path = "../utils" }
 layer = { path = "../layer" }
 volo-gen = { path = "../volo-gen" }
+pool = { path = "../pool" }
 
 volo = { workspace = true }
 volo-grpc = { workspace = true }
 serde_json = { workspace = true }
 pilota = { workspace = true }
 chrono = { workspace = true }
+apache_age = { workspace = true }
+dotenv = { workspace = true }
+bb8 = { workspace = true }
+bb8-postgres = { workspace = true }
 
-sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros", "with-time", "with-json", "postgres-array"] }
+sea-orm = { workspace = true, features = [
+    "sqlx-postgres",
+    "runtime-tokio-native-tls",
+    "macros",
+    "with-time",
+    "with-json",
+    "postgres-array",
+] }
 tokio = { workspace = true, features = ["full"] }

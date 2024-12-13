@@ -1,12 +1,8 @@
-/*
- * 版权属于：yitter(yitter@126.com)
- * 开源地址：https://github.com/yitter/idgenerator
- */
 pub struct OverCostActionArg {
-    ActionType: u32,
-    TimeTick: i64,
-    WorkerId: u16,
-    OverCostCountInOneTerm: i32,
-    GenCountInOneTerm: i32,
-    TermIndex: i32,
+    action_type: u32,
+    time_tick: i64,
+    worker_id: u16,
+    over_cost_count_in_one_term: i32,
+    gen_count_in_one_term: i32,
+    term_index: i32,
 }

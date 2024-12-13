@@ -25,9 +25,7 @@ use volo_gen::person_center::{
     CheckPermissionReq,
     Accessable,
 };
-use utils::{
-    encryption::encryption
-};
+use utils::encryption::encryption;
 use super::helper::user_model_to_user_grpc_response;
 
 pub async fn user_detail_service(

@@ -20,36 +20,21 @@ members = [
     "frontend-base-service",
     "idgen",
     "pool",
+    "crypto_tool",
 ]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-[[bin]]
-name = "person-center"
-path = "person-center/src/main.rs"
-
-[[bin]]
-name = "aggregation-gateway"
-path = "aggregation-gateway/src/main.rs"
-
-[[bin]]
-name = "frontend-base-service"
-path = "frontend-base-service/src/main.rs"
-
-[[bin]]
-name = "semen-sinapis"
-path = "src/main.rs"
-
 [features]
-hydrate = ["leptos/hydrate", "thaw/hydrate"]
+hydrate = [
+    "leptos/hydrate",
+    "thaw/hydrate",
+    "dep:wasm-bindgen",
+]
 ssr = [
     "dep:tracing",
-    "dep:tokio",
-    "dep:axum",
-    "dep:tower",
-    "dep:tower-http",
-    "dep:leptos_axum",
+    "dep:leptos_wasi",
     "dep:dotenv",
     "dep:sea-orm",
     "leptos/ssr",
@@ -57,41 +42,36 @@ ssr = [
     "leptos_router/ssr",
     "thaw/ssr",
     "leptos-use/ssr",
-    "leptos-use/axum",
     "dep:layer",
     "dep:entity",
+    "dep:pool",
 ]
 
 [dependencies]
 serde_json = "*"
 console_error_panic_hook = "*"
 anyhow = "*"
-leptos_meta = "0.7.0-rc1"
+leptos_meta = "*"
 futures = "*"
-wasm-bindgen = "*"
 thiserror = "*"
 chrono = "*"
 jsonwebtoken = "*"
 forwarded-header-value = "*"
 regex = "*"
 codee = "*"
+hydration_context = "*"
 
+wasm-bindgen = { version = "0.2.95", optional = true }
+wasi = { version = "0.13.3", optional = true }
 serde = { version = "*", features = ["derive"] }
-leptos = { version = "0.7.0-rc1", features = [
-    "nightly",
-    "experimental-islands",
-] }
-axum = { version = "*", optional = true }
-leptos_axum = { version = "0.7.0-rc1", optional = true }
-leptos_router = { version = "0.7.0-rc1", features = ["nightly"] }
-tokio = { version = "*", features = ["rt-multi-thread"], optional = true }
-tower = { version = "*", optional = true, features = ["util"] }
-tower-http = { version = "*", features = ["fs"], optional = true }
+leptos = { version = "*", features = ["nightly", "islands"] }
+leptos_wasi= { version = "*", optional = true }
+leptos_router = { version = "*", features = ["nightly"] }
 tracing = { version = "*", optional = true }
 uuid = { version = "*", features = ["serde", "v4"] }
 cookie = { version = "*", features = ["percent-encode", "private"] }
 thaw = { git = "https://github.com/thaw-ui/thaw.git", features = ["nightly"], optional = true }
-leptos-use = { version = "0.14.0-rc3" }
+leptos-use = { version = "*" }
 dotenv = { version = "*", optional = true }
 sea-orm = { version = "*", optional = true, features = [
     "sqlx-postgres",
@@ -102,9 +82,10 @@ sea-orm = { version = "*", optional = true, features = [
     "postgres-array",
 ] }
 
-# idgen = { path = "idgen" }
+idgen = { path = "idgen" }
 layer = { path = "layer", optional = true }
 entity = { path = "entity", optional = true }
+pool = { path = "pool", optional = true }
 # volo-gen = { path = "volo-gen" }
 
 [workspace.dependencies]
@@ -124,10 +105,6 @@ tracing = "*"
 prost-types = "*"
 chrono = "*"
 console_error_panic_hook = "*"
-tower-service = "*"
-tower-layer = "*"
-tower = "*"
-tower-http = "*"
 wasm-bindgen = "*"
 thiserror = "*"
 http = "*"
@@ -143,15 +120,14 @@ lazy_static = "*"
 tracing-subscriber = "*"
 axum = "*"
 axum-macros = "*"
-leptos = "0.7.0-rc1"
-leptos_axum = "0.7.0-rc1"
-leptos_meta = "0.7.0-rc1"
-leptos_router = "0.7.0-rc1"
-leptos-use = "0.14.0-rc3"
+leptos = "*"
+leptos_axum = "*"
+leptos_meta = "*"
+leptos_router = "*"
+leptos-use = "*"
 utoipa = "*"
 utoipa-swagger-ui = "*"
 sea-orm = "*"
-tokio = "*"
 argon2 = "*"
 nacos-sdk = "*"
 uuid = "*"
@@ -159,6 +135,7 @@ cookie = "*"
 bb8 = "*"
 redis = "*"
 bb8-redis = "*"
+bb8-postgres = "*"
 pin-project = "*"
 sodiumoxide = "*"
 regex = "*"
@@ -172,29 +149,12 @@ codegen-units = 1
 panic = "abort"
 
 [package.metadata.leptos]
-# The name used by wasm-bindgen/cargo-leptos for the JS/WASM bundle. Defaults to the crate name
-output-name = "semen-sinapis"
-
-# The site root folder is where cargo-leptos generate all output. WARNING: all content of this folder will be erased on a rebuild. Use it in your server setup.
-site-root = "target/site"
-
-# The site-root relative folder where all compiled output (JS, WASM and CSS) is written
-# Defaults to pkg
-site-pkg-dir = "pkg"
-
-# [Optional] The source CSS file. If it ends with .sass or .scss then it will be compiled by dart-sass into CSS. The CSS is optimized by Lightning CSS before being written to <site-root>/<site-pkg>/app.css
-style-file = "style/tailwind.css"
 # Assets source dir. All files found here will be copied and synchronized to site-root.
 # The assets-dir cannot have a sub directory with the same name/path as site-pkg-dir.
 #
 # Optional. Env: LEPTOS_ASSETS_DIR.
 assets-dir = "public"
 
-# The IP and port (ex: 127.0.0.1:3000) where the server serves the content. Use it in your server setup.
-site-addr = "0.0.0.0:3008"
-
-# The port to use for automatic reload monitoring
-reload-port = 3001
 
 # [Optional] Command to use when running end2end tests. It will run in the end2end dir.
 #   [Windows] for non-WSL use "npx.cmd playwright test"
@@ -208,29 +168,24 @@ browserquery = "defaults"
 # The environment Leptos will run in, usually either "DEV" or "PROD"
 env = "DEV"
 
-# The features to use when compiling the bin target
-#
-# Optional. Can be over-ridden with the command line parameter --bin-features
-bin-features = ["ssr"]
-
-# If the --no-default-features flag should be used when compiling the bin target
-#
-# Optional. Defaults to false.
-bin-default-features = false
-
-# The features to use when compiling the lib target
-#
-# Optional. Can be over-ridden with the command line parameter --lib-features
+# == Hydrate (client)
+lib-profile-release = "wasm-release"
 lib-features = ["hydrate"]
 
-# If the --no-default-features flag should be used when compiling the lib target
-#
-# Optional. Defaults to false.
-lib-default-features = false
+# ==== Rebuild the std crates using the optimized profile.
+lib-cargo-args = [
+    "-Zbuild-std=std,panic_abort,core,alloc",
+    "-Zbuild-std-features=panic_immediate_abort",
+]
 
-# The profile to use for the lib target when compiling for release
-#
-# Optional. Defaults to "release".
-lib-profile-release = "wasm-release"
+# == SSR
+bin-profile-release = "wasm-release"
+bin-target-triple = "wasm32-wasip2"
+bin-features = ["ssr"]
+bin-target-dir = "target"
 
-bin-target = "semen-sinapis"
+# ==== Rebuild the std crates using the optimized profile.
+bin-cargo-args = [
+    "-Zbuild-std=std,panic_abort,core,alloc",
+    "-Zbuild-std-features=panic_immediate_abort,wasi_ext",
+]

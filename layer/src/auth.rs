@@ -12,18 +12,18 @@ use axum::{
 use bb8_redis::{bb8::Pool, RedisConnectionManager};
 use chrono::{prelude::*, Duration};
 use cookie::{time::Duration as TimeDuration, Cookie};
-use entity::entities::{auth::Account, middleware::Claims};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
+use leptos::logging::log;
 use redis::{AsyncCommands, JsonAsyncCommands};
 use serde_json::{json, Value};
 use std::str::FromStr;
 
-use entity::entities::state::OpenApiState;
-use idgen::NextId;
+use entity::{auth::Account, middleware::Claims, state::OpenApiState};
+use idgen::next_id;
 
 lazy_static::lazy_static! {
     static ref PRIVATE_KEY: EncodingKey = EncodingKey::from_ed_pem(include_bytes!("../../private.pem")).unwrap();
-    static ref PUBLIC_KEY: DecodingKey = DecodingKey::from_ed_pem(include_bytes!("../../private.pem")).unwrap();
+    static ref PUBLIC_KEY: DecodingKey = DecodingKey::from_ed_pem(include_bytes!("../../public.pem")).unwrap();
     static ref AUDIENCE: String = String::from("browser");
     static ref ISSUER: String = String::from("auth");
     static ref ACCESS_TOKEN_NAME: String = String::from("access_token");
@@ -45,13 +45,13 @@ pub async fn auth_middleware(
     request: Request,
     next: Next,
 ) -> Response {
-
     let mut redis_connect = match redis_pool.get().await {
         Ok(conn) => conn,
         Err(e) => {
+            log!("{}", e);
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                format!("redis pool connect failed.{}", e),
+                format!("redis pool connect failed."),
             )
                 .into_response()
         }
@@ -66,17 +66,21 @@ pub async fn auth_middleware(
         true => {
             let res = next.run(request).await;
             let (parts, body) = res.into_parts();
-            if parts.status == StatusCode::ACCEPTED {
+            if parts.status == StatusCode::ACCEPTED
+                && open_api_state.0.openapi[1].is_match(uri.path())
+            {
                 let user_res = match to_bytes(body, usize::MAX).await {
                     Ok(user) => user,
-                    Err(_) => {
+                    Err(e) => {
+                        log!("{}", e);
                         return (StatusCode::INTERNAL_SERVER_ERROR, "body parse failed.")
                             .into_response()
                     }
                 };
                 let user_id_str = match String::from_utf8(user_res.to_vec()) {
                     Ok(user) => user,
-                    Err(_) => {
+                    Err(e) => {
+                        log!("{}", e);
                         return (StatusCode::INTERNAL_SERVER_ERROR, "user id parse failed.")
                             .into_response()
                     }
@@ -84,14 +88,15 @@ pub async fn auth_middleware(
 
                 let user_id = match user_id_str.parse::<i64>() {
                     Ok(user_id) => user_id,
-                    Err(_) => {
+                    Err(e) => {
+                        log!("{}", e);
                         return (StatusCode::INTERNAL_SERVER_ERROR, "user id parse failed.")
                             .into_response()
                     }
                 };
 
                 let now = Utc::now();
-                let snow_id = NextId();
+                let snow_id = next_id();
 
                 let mut new_parts = Parts::from(parts);
                 let (access_token, access_duration) =
@@ -114,7 +119,8 @@ pub async fn auth_middleware(
                         .to_string(),
                 ) {
                     Ok(acc_c) => acc_c,
-                    Err(_) => {
+                    Err(e) => {
+                        log!("{}", e);
                         return (
                             StatusCode::INTERNAL_SERVER_ERROR,
                             "access cookie build failed.",
@@ -132,7 +138,8 @@ pub async fn auth_middleware(
                         .to_string(),
                 ) {
                     Ok(ref_c) => ref_c,
-                    Err(_) => {
+                    Err(e) => {
+                        log!("{}", e);
                         return (
                             StatusCode::INTERNAL_SERVER_ERROR,
                             "refresh cookie build failed.",
@@ -151,7 +158,8 @@ pub async fn auth_middleware(
                 {
                     let account = match serde_json::from_str::<Vec<Account>>(&account_raw) {
                         Ok(account) => account,
-                        Err(_) => {
+                        Err(e) => {
+                            log!("{}", e);
                             return (
                                 StatusCode::INTERNAL_SERVER_ERROR,
                                 "parse redis info failed.",
@@ -161,13 +169,14 @@ pub async fn auth_middleware(
                     };
 
                     if !account.is_empty() {
-                        if let Err(_) = redis_connect
+                        if let Err(e) = redis_connect
                             .json_del::<&str, &str, String>(
                                 &user_id.to_string(),
                                 &*REDIS_JSON_ROOT_PATH,
                             )
                             .await
                         {
+                            log!("{}", e);
                             return (
                                 StatusCode::INTERNAL_SERVER_ERROR,
                                 "delete redis info failed.",
@@ -177,7 +186,7 @@ pub async fn auth_middleware(
                     };
                 };
 
-                if let Err(_) = redis_connect
+                if let Err(e) = redis_connect
                     .json_set::<&str, &str, Value, String>(
                         &user_id.to_string(),
                         &*REDIS_JSON_ROOT_PATH,
@@ -190,14 +199,16 @@ pub async fn auth_middleware(
                     )
                     .await
                 {
+                    log!("{}", e);
                     return (StatusCode::INTERNAL_SERVER_ERROR, "set redis info failed.")
                         .into_response();
                 }
 
-                if let Err(_) = redis_connect
+                if let Err(e) = redis_connect
                     .expire_at::<&str, i64>(&user_id.to_string(), refresh_exp.timestamp())
                     .await
                 {
+                    log!("{}", e);
                     return (
                         StatusCode::INTERNAL_SERVER_ERROR,
                         "expire redis info failed.",
@@ -220,7 +231,8 @@ pub async fn auth_middleware(
             validation.set_issuer(&[ISSUER.clone()]);
             let cookie_str = match cookies.to_str() {
                 Ok(cookie) => cookie,
-                Err(_) => {
+                Err(e) => {
+                    log!("{}", e);
                     return (StatusCode::UNAUTHORIZED, "Unauthorized, cookie error.")
                         .into_response()
                 }
@@ -231,7 +243,8 @@ pub async fn auth_middleware(
             for token in cookie_str.split(";").collect::<Vec<&str>>() {
                 let token_jar = match Cookie::from_str(token.trim()) {
                     Ok(cookie) => cookie,
-                    Err(_) => {
+                    Err(e) => {
+                        log!("{}", e);
                         return (
                             StatusCode::UNAUTHORIZED,
                             "Unauthorized, cookie split error.",
@@ -256,7 +269,8 @@ pub async fn auth_middleware(
                     refresh_token =
                         match decode::<Claims>(token_jar.value(), &*PUBLIC_KEY, &validation) {
                             Ok(token) => Some(token.claims),
-                            Err(_) => {
+                            Err(e) => {
+                                log!("{}", e);
                                 return (
                                     StatusCode::UNAUTHORIZED,
                                     "Unauthorized, refresh token parse error.",
@@ -282,22 +296,39 @@ pub async fn auth_middleware(
                         )
                         .await
                     {
-                        Err(_) => (StatusCode::UNAUTHORIZED, "Unauthorized.").into_response(),
+                        Err(e) => {
+                            log!("{}", e);
+                            (
+                                StatusCode::INTERNAL_SERVER_ERROR,
+                                "Unauthorized, get redis connect failed.",
+                            )
+                            .into_response()
+                        },
                         Ok(account) => {
                             let account = match serde_json::from_str::<Vec<Account>>(&account) {
                                 Ok(account) => account,
-                                Err(_) => {
-                                    return (StatusCode::INTERNAL_SERVER_ERROR, "Unauthorized.")
+                                Err(e) => {
+                                    log!("{}", e);
+                                    return (
+                                        StatusCode::INTERNAL_SERVER_ERROR,
+                                        "Unauthorized. account deserialize failed.",
+                                    )
                                         .into_response()
                                 }
                             };
 
                             match account.is_empty() {
-                                true => (StatusCode::UNAUTHORIZED, "Unauthorized.").into_response(),
+                                true => {
+                                    (StatusCode::UNAUTHORIZED, "Unauthorized. account is empty.")
+                                        .into_response()
+                                }
                                 false => {
                                     let now = Utc::now();
                                     if account.first().unwrap().exp.timestamp() < now.timestamp() {
-                                        return (StatusCode::UNAUTHORIZED, "Unauthorized.")
+                                        return (
+                                            StatusCode::UNAUTHORIZED,
+                                            "Unauthorized. account expired.",
+                                        )
                                             .into_response();
                                     };
                                     let res = next.run(request).await;
@@ -319,7 +350,8 @@ pub async fn auth_middleware(
                                             .to_string(),
                                     ) {
                                         Ok(acc_c) => acc_c,
-                                        Err(_) => {
+                                        Err(e) => {
+                                            log!("{}", e);
                                             return (
                                                 StatusCode::INTERNAL_SERVER_ERROR,
                                                 "access cookie build failed.",
@@ -343,22 +375,35 @@ pub async fn auth_middleware(
                         )
                         .await
                     {
-                        Err(_) => (StatusCode::UNAUTHORIZED, "Unauthorized.").into_response(),
+                        Err(e) => {
+                            log!("{}", e);
+                            (StatusCode::UNAUTHORIZED, "Unauthorized.").into_response()
+                        },
                         Ok(account) => {
                             let account = match serde_json::from_str::<Vec<Account>>(&account) {
                                 Ok(account) => account,
-                                Err(_) => {
-                                    return (StatusCode::INTERNAL_SERVER_ERROR, "Unauthorized.")
+                                Err(e) => {
+                                    log!("{}", e);
+                                    return (
+                                        StatusCode::INTERNAL_SERVER_ERROR,
+                                        "Unauthorized. account deserialize failed.",
+                                    )
                                         .into_response()
                                 }
                             };
 
                             match account.is_empty() {
-                                true => (StatusCode::UNAUTHORIZED, "Unauthorized.").into_response(),
+                                true => {
+                                    (StatusCode::UNAUTHORIZED, "Unauthorized. account is empty.")
+                                        .into_response()
+                                }
                                 false => {
                                     let now = Utc::now();
                                     if account.first().unwrap().exp.timestamp() < now.timestamp() {
-                                        return (StatusCode::UNAUTHORIZED, "Unauthorized.")
+                                        return (
+                                            StatusCode::UNAUTHORIZED,
+                                            "Unauthorized. account expired.",
+                                        )
                                             .into_response();
                                     };
                                     let res = next.run(request).await;
@@ -380,7 +425,8 @@ pub async fn auth_middleware(
                                             .to_string(),
                                     ) {
                                         Ok(acc_c) => acc_c,
-                                        Err(_) => {
+                                        Err(e) => {
+                                            log!("{}", e);
                                             return (
                                                 StatusCode::INTERNAL_SERVER_ERROR,
                                                 "access cookie build failed.",
@@ -390,7 +436,7 @@ pub async fn auth_middleware(
                                     };
                                     new_parts.headers.append(SET_COOKIE, refresh_cookie);
 
-                                    if let Err(_) = redis_connect
+                                    if let Err(e) = redis_connect
                                         .json_set::<&str, &str, Value, String>(
                                             &acc_t.sub.to_string(),
                                             &*REDIS_JSON_ROOT_PATH,
@@ -403,6 +449,7 @@ pub async fn auth_middleware(
                                         )
                                         .await
                                     {
+                                        log!("{}", e);
                                         return (
                                             StatusCode::INTERNAL_SERVER_ERROR,
                                             "set redis info failed.",
@@ -410,13 +457,14 @@ pub async fn auth_middleware(
                                             .into_response();
                                     }
 
-                                    if let Err(_) = redis_connect
+                                    if let Err(e) = redis_connect
                                         .expire_at::<&str, i64>(
                                             &acc_t.sub.to_string(),
                                             refresh_exp.timestamp(),
                                         )
                                         .await
                                     {
+                                        log!("{}", e);
                                         return (
                                             StatusCode::INTERNAL_SERVER_ERROR,
                                             "expire redis info failed.",
@@ -429,7 +477,7 @@ pub async fn auth_middleware(
                         }
                     }
                 }
-                (Some(acc_t), Some(_)) => {
+                (Some(acc_t), Some(_ref_t)) => {
                     match redis_connect
                         .json_get::<&str, &str, String>(
                             &acc_t.sub.to_string(),
@@ -437,11 +485,15 @@ pub async fn auth_middleware(
                         )
                         .await
                     {
-                        Err(_) => (StatusCode::UNAUTHORIZED, "Unauthorized.").into_response(),
+                        Err(e) => {
+                            log!("{}", e);
+                            (StatusCode::UNAUTHORIZED, "Unauthorized.").into_response()
+                        },
                         Ok(account) => {
                             let account = match serde_json::from_str::<Vec<Account>>(&account) {
                                 Ok(account) => account,
-                                Err(_) => {
+                                Err(e) => {
+                                    log!("{}", e);
                                     return (StatusCode::INTERNAL_SERVER_ERROR, "Unauthorized.")
                                         .into_response()
                                 }
@@ -486,8 +538,7 @@ fn get_access_cookie_info(
         &access_claims,
         &*PRIVATE_KEY,
     )
-    .ok()
-    .ok_or(
+    .map_err(|_|
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             "access token parse failed.",
@@ -520,8 +571,7 @@ fn get_refresh_cookie_info(
         &refresh_claims,
         &*PRIVATE_KEY,
     )
-    .ok()
-    .ok_or(
+    .map_err(|_|
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             "refresh token parse failed.",

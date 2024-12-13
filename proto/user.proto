@@ -10,7 +10,7 @@ service User {
     rpc UserList (FilterUserRequest) returns (UsersResponse);
     rpc UserDetail (UserDetailRequest) returns (UserResponse);
     rpc UpdateUser (EditUserRequest) returns (UserResponse);
-    rpc InsertUser (UserInfo) returns (UserResponse);
+    rpc InsertUser (PrivateUserInfo) returns (UserResponse);
     rpc DeleteUser (UserDetailRequest) returns (Accessable);
     rpc Login (LoginForm) returns (Logged);
     rpc CheckPermission (CheckPermissionRequest) returns (Accessable);
@@ -32,6 +32,16 @@ message EditUserRequest {
     optional string alias = 2;
     optional string email = 3;
     optional string phone = 4;
+
+    map<string, string> extra = 10;
+}
+
+message PrivateUserInfo {
+    string name = 1;
+    string password = 2;
+    optional string alias = 3;
+    optional string email = 4;
+    optional string phone = 5;
 
     map<string, string> extra = 10;
 }

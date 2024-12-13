@@ -1,4 +1,3 @@
-// use idgen::NextId;
 use leptos::{prelude::*, task::spawn_local};
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
@@ -90,32 +89,31 @@ fn GetId() -> impl IntoView {
 
 #[server]
 pub async fn login() -> Result<i64, ServerFnError> {
-    // Ok(NextId())
-    use axum::Extension;
-    use leptos_axum::{extract, redirect};
-    use sea_orm::DatabaseConnection;
-    use sea_orm::EntityTrait;
+    use axum::{Extension, http::StatusCode};
+    use leptos_axum::{extract, redirect, ResponseOptions};
+    use bb8::Pool;
 
-    use entity::entities::user_property;
+    use entity::user_property;
+    use pool::grpc::person_center::PersonCenterGrpcClientManager;
 
     redirect("/");
-    let pg_conn: Extension<DatabaseConnection> = extract().await?;
+    let person_center_pool: Extension<Pool<PersonCenterGrpcClientManager>> = extract().await?;
+    let person_center_client = person_center_pool.get().await.unwrap();
+
     match user_property::Entity::find_by_id(1).one(&pg_conn.0).await? {
-        Some(user) => Ok(user.id),
+        Some(user) => {
+            let response = expect_context::<ResponseOptions>();
+
+            // set the HTTP status code
+            response.set_status(StatusCode::ACCEPTED);
+            Ok(user.id)
+        },
         None => Ok(0),
     }
 }
 
 #[server]
 pub async fn access(user_id: i64) -> Result<(), ServerFnError> {
-    use leptos_axum::ResponseOptions;
-    use axum::http::StatusCode;
-
-    // pull ResponseOptions from context
-    let response = expect_context::<ResponseOptions>();
-
-    // set the HTTP status code
-    response.set_status(StatusCode::ACCEPTED);
     println!("{}", user_id);
 
     Ok(())

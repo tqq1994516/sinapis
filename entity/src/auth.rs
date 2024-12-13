@@ -18,6 +18,7 @@ mod jwt_str_date {
     where
         S: Serializer,
     {
+        // date时间戳转字符串再执行序列化
         serializer.serialize_str(&date.timestamp().to_string())
     }
 
@@ -25,7 +26,9 @@ mod jwt_str_date {
     where
         D: Deserializer<'de>,
     {
-        Ok(DateTime::from_timestamp(i64::deserialize(deserializer)?, 0)
+        // 原始数据反序列化为字符串类型再转i64构造时间戳
+        let s = String::deserialize(deserializer)?;
+        Ok(DateTime::from_timestamp(s.parse::<i64>().unwrap(), 0)
             .expect("invalid timestamp value!"))
     }
 }

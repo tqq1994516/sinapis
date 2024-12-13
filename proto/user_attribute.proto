@@ -6,29 +6,35 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 import "universal.proto";
 
+enum UserAttributeOriginNodeType {
+    USER = 0;
+    USER_ATTRIBUTE = 1;
+}
+
 message AddUserAttributeRequest {
-    string name = 1;
+    int64 origin_id = 1;
+    UserAttributeOriginNodeType origin_node_type = 2;
+    string name = 3;
 
     map<string, string> properties = 10;
 }
 
 message EditUserAttributeRequest {
     int64 user_attribute_id = 1;
-    string name = 2;
+    optional string name = 2;
 
     map<string, string> properties = 10;
 }
 
 message FilterAttributeRequest {
-    optional int64 origin_id = 2;
-    optional string name = 3;
-    optional int64 target_id = 4;
+    optional string name = 1;
+    optional int64 target_id = 2;
 
     map<string, string> properties = 10;
 }
 
 message PreciseAttributeRequest {
-    int64 target_id = 4;
+    int64 target_id = 1;
 }
 
 message UserAttributeInfo {
@@ -37,18 +43,18 @@ message UserAttributeInfo {
     map<string, string> extra = 10;
 }
 
-message GetUserAttributeResponse {
+message UserAttributeResponse {
     int64 id = 1;
     UserAttributeInfo user_attribute = 2;
 }
 
-message GetUserAttributesResponse {
-    repeated GetUserAttributeResponse user_attributes = 1;
+message UserAttributesResponse {
+    repeated UserAttributeResponse user_attributes = 1;
 }
 
-service UserAttributeService {
-    rpc AddUserAttribute(AddUserAttributeRequest) returns (GetUserAttributeResponse);
-    rpc EditUserAttribute(EditUserAttributeRequest) returns (GetUserAttributeResponse);
-    rpc FilterUserAttribute(FilterAttributeRequest) returns (GetUserAttributesResponse);
+service UserAttribute {
+    rpc AddUserAttribute(AddUserAttributeRequest) returns (UserAttributeResponse);
+    rpc EditUserAttribute(EditUserAttributeRequest) returns (UserAttributeResponse);
+    rpc FilterUserAttribute(FilterAttributeRequest) returns (UserAttributesResponse);
     rpc RemoveUserAttribute(PreciseAttributeRequest) returns (Accessable);
 }

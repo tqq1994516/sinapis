@@ -1,10 +1,5 @@
-// use pool::dapr::person_center::GrpcClientManager;
 use serde::{Deserialize, Serialize};
 use chrono::prelude::*;
-
-// pub struct Middleware {
-//     dapr_grpc_client: GrpcClientManager,
-// }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {

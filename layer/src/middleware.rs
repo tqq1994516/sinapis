@@ -8,6 +8,8 @@ use axum::{
 use bb8_redis::{bb8::Pool, RedisConnectionManager};
 use sea_orm::{Database, DatabaseConnection};
 
+use pool::grpc::person_center::PersonCenterGrpcClientManager;
+
 // An extractor that performs authorization.
 // struct RequireAuth;
 
@@ -37,6 +39,12 @@ pub async fn sea_orm_connect_extension() -> Extension<DatabaseConnection> {
 
 pub async fn redis_connect_extension() -> Extension<Pool<RedisConnectionManager>> {
     let manager = RedisConnectionManager::new(std::env::var("REDIS_URL").unwrap()).unwrap();
+    let pool = Pool::builder().build(manager).await.unwrap();
+    Extension(pool)
+}
+
+pub async fn person_center_grpc_extension() -> Extension<Pool<PersonCenterGrpcClientManager>> {
+    let manager = PersonCenterGrpcClientManager::new("127.0.0.1:8081").unwrap();
     let pool = Pool::builder().build(manager).await.unwrap();
     Extension(pool)
 }

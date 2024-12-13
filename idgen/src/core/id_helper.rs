@@ -1,42 +1,38 @@
-/*
- * 版权属于：yitter(yitter@126.com)
- * 开源地址：https://github.com/yitter/idgenerator
- */
 use std::sync::Mutex;
 use std::sync::Arc;
 
 use super::DefaultIdGenerator;
 use super::IdGeneratorOptions;
 
-pub struct YitIdHelper;
+pub struct IdHelper;
 
-static mut idGenInstance: Option<Arc<Mutex<DefaultIdGenerator>>> = None;
+static mut ID_GEN_INSTANCE: Option<Arc<Mutex<DefaultIdGenerator>>> = None;
 
-impl YitIdHelper {
-    fn IdGenInstance() -> Arc<Mutex<DefaultIdGenerator>> {
+impl IdHelper {
+    fn id_gen_instance() -> Arc<Mutex<DefaultIdGenerator>> {
         unsafe {
-            idGenInstance.get_or_insert_with(|| {
-                Arc::new(Mutex::new(DefaultIdGenerator::Default()))
+            ID_GEN_INSTANCE.get_or_insert_with(|| {
+                Arc::new(Mutex::new(DefaultIdGenerator::default()))
             }).clone()
         }
     }
 
-    pub fn SetIdGenerator(options: IdGeneratorOptions) {
-        let mut idgenArc = YitIdHelper::IdGenInstance();
-        let mut idgen = idgenArc.lock().unwrap();
-        idgen.Worker.SetOptions(options);
+    pub fn set_id_generator(options: IdGeneratorOptions) {
+        let idgen_arc = IdHelper::id_gen_instance();
+        let mut idgen = idgen_arc.lock().unwrap();
+        idgen.worker.set_options(options);
     }
 
-    pub fn SetWorkerId(workerId: u32) {
-        let mut idgenArc = YitIdHelper::IdGenInstance();
-        let mut idgen = idgenArc.lock().unwrap();
-        let mut options = IdGeneratorOptions::New(workerId);
-        idgen.Worker.SetOptions(options);
+    pub fn set_worker_id(worker_id: u32) {
+        let idgen_arc = IdHelper::id_gen_instance();
+        let mut idgen = idgen_arc.lock().unwrap();
+        let options = IdGeneratorOptions::new(worker_id);
+        idgen.worker.set_options(options);
     }
 
-    pub fn NextId() -> i64 {
-        let mut idgenArc = YitIdHelper::IdGenInstance();
-        let mut idgen = idgenArc.lock().unwrap();
-        idgen.Worker.NextId()
+    pub fn next_id() -> i64 {
+        let idgen_arc = IdHelper::id_gen_instance();
+        let mut idgen = idgen_arc.lock().unwrap();
+        idgen.worker.next_id()
     }
 }

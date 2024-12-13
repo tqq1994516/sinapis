@@ -4,12 +4,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bb8 = { workspace = true }
-redis = {workspace = true, features = ["aio", "json"] }
 # volo = { workspace = true }
 # dapr = { workspace = true }
 axum = { workspace = true }
+tokio-postgres = { workspace = true }
+apache_age = { workspace = true }
+bb8 = { workspace = true }
 
-# tokio = { workspace = true, features = ["full"] }
+redis = { workspace = true, features = ["aio", "json"] }
+sea-orm = { workspace = true, features = ["sqlx-postgres"] }
+tokio = { workspace = true, features = ["full"] }
 
-# volo-gen = { path = "../volo-gen" }
+volo-gen = { path = "../volo-gen" }

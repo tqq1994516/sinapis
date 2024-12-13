@@ -1,10 +1,9 @@
-use apache_age::{tokio::AgeClient, Vertex};
+use apache_age::{tokio::{AgeClient, Client}, Vertex};
 use pilota::{AHashMap, FastStr};
 use sonic_rs::{Deserialize, Serialize};
+use tokio_postgres::Row;
 use std::fmt::Display;
 use volo_grpc::Status;
-
-use crate::get_age;
 
 pub const GRAPH_NAME: &str = "ngac";
 pub const CREATE: &str = "CREATE";
@@ -141,11 +140,7 @@ fn properties_to_property_query_condition(
     }
 }
 
-pub async fn create_node(node: NodeTypeObject) -> Option<Status> {
-    let age = match get_age().await {
-        Ok(age) => age,
-        Err(e) => return Some(Status::from_error(e)),
-    };
+pub async fn create_node(client: &Client, node: NodeTypeObject) -> Option<Status> {
 
     let (node_type, query_condition) = match node {
         NodeTypeObject::User(user) => (
@@ -169,11 +164,11 @@ pub async fn create_node(node: NodeTypeObject) -> Option<Status> {
             properties_to_property_query_condition(policy_class.properties).unwrap(),
         ),
     };
-    let _ = age
+    let _ = client
         .unique_index(GRAPH_NAME, &node_type.fmt_full(), "unique_name", "name")
         .await
         .unwrap();
-    let st = match age
+    let st = match client
         .prepare_cypher(
             GRAPH_NAME,
             &format!(
@@ -191,7 +186,7 @@ pub async fn create_node(node: NodeTypeObject) -> Option<Status> {
         Err(e) => return Some(Status::from_error(Box::new(e))),
     };
 
-    if let Err(e) = age.query(&st, &[]).await {
+    if let Err(e) = client.query(&st, &[]).await {
         return Some(Status::from_error(Box::new(e)));
     }
     None
@@ -247,11 +242,7 @@ pub fn create_association_cypher(
     }
 }
 
-pub async fn assignment(assignment_combination: Assignment) -> Option<Status> {
-    let age = match get_age().await {
-        Ok(age) => age,
-        Err(e) => return Some(Status::from_error(e)),
-    };
+pub async fn assignment(client: &Client, assignment_combination: Assignment) -> Option<Status> {
     let cypher = match assignment_combination {
         Assignment::U2UA((user_id, user_attribute_id)) => create_association_cypher(
             NodeType::User,
@@ -306,11 +297,11 @@ pub async fn assignment(assignment_combination: Assignment) -> Option<Status> {
         ),
     };
 
-    let st = match age.prepare_cypher(GRAPH_NAME, &cypher, false).await {
+    let st = match client.prepare_cypher(GRAPH_NAME, &cypher, false).await {
         Ok(st) => st,
         Err(e) => return Some(Status::from_error(Box::new(e))),
     };
-    if let Err(e) = age.query(&st, &[]).await {
+    if let Err(e) = client.query(&st, &[]).await {
         return Some(Status::from_error(Box::new(e)));
     }
     None
@@ -493,22 +484,18 @@ pub fn search_origin_id_to_assigned_target_node_path_cypher(
 }
 
 pub async fn search_node(
+    client: &Client,
     node_type: NodeType,
     name: Option<&str>,
     id: Option<i64>,
     properties: AHashMap<FastStr, FastStr>,
 ) -> Result<VertexTypeObject, Status> {
-    let age = match get_age().await {
-        Ok(age) => age,
-        Err(e) => return Err(Status::from_error(e)),
-    };
-
     let cypher = match search_node_cypher(node_type.clone(), name, id, properties) {
         Ok(cypher) => cypher,
         Err(s) => return Err(s),
     };
 
-    match age.query_cypher::<()>(GRAPH_NAME, &cypher, None).await {
+    match client.query_cypher::<()>(GRAPH_NAME, &cypher, None).await {
         Ok(rows) => {
             if !rows.is_empty() {
                 match node_type {
@@ -542,25 +529,21 @@ pub async fn search_node(
 }
 
 pub async fn search_user_attribute_node(
+    client: &Client,
     id: Option<i64>,
     attribute_name: Option<&str>,
     properties: AHashMap<FastStr, FastStr>,
-) -> Result<Vertex<UserAttribute>, Status> {
-    let age = match get_age().await {
-        Ok(age) => age,
-        Err(e) => return Err(Status::from_error(e)),
-    };
+) -> Result<Vec<Row>, Status> {
 
     let cypher = match search_node_cypher(NodeType::UserAttribute, attribute_name, id, properties) {
         Ok(cypher) => cypher,
         Err(s) => return Err(s),
     };
-
-    let user_attribute = match age.query_cypher::<()>(GRAPH_NAME, &cypher, None).await {
+    client.
+    let user_attribute = match client.query_cypher::<()>(GRAPH_NAME, &cypher, None).await {
         Ok(rows) => {
             if !rows.is_empty() {
-                let node: Vertex<UserAttribute> = rows[0].get(0);
-                node
+                rows
             } else {
                 return Err(Status::not_found("User attribute not found!"));
             }

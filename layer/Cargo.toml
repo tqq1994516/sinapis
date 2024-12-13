@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# volo = { workspace = true }
-# volo-grpc = { workspace = true }
+volo = { workspace = true }
+volo-grpc = { workspace = true }
 axum = { workspace = true }
 # http-body = { workspace = true }
 # bytes = { workspace = true }
@@ -17,6 +17,10 @@ lazy_static = { workspace = true }
 bb8-redis = { workspace = true }
 serde_json = { workspace = true }
 regex = { workspace = true }
+bb8 = { workspace = true }
+bb8-postgres = { workspace = true }
+tokio-postgres = { workspace = true }
+
 
 # tower = { workspace = true, features = ["util"] }
 sea-orm = { workspace = true, features = [
@@ -32,6 +36,8 @@ redis = { workspace = true, features = ["tokio-comp", "json"] }
 chrono = { workspace = true, features = ["serde"] }
 jsonwebtoken = { workspace = true, features = ["use_pem"] }
 cookie = { workspace = true, features = ["secure", "percent-encode"] }
+leptos = { workspace = true, features = ["nightly"] }
 
 entity = { path = "../entity" }
 idgen = { path = "../idgen" }
+pool = { path = "../pool" }

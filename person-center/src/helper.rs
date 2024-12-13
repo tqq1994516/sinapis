@@ -1,6 +1,6 @@
-use entity::entities::user_info::Model as User;
+use entity::entities::user_property::Model as User;
 use volo_gen::person_center::UserResponse;
-use utils::data_handle::db_time_to_proto_time;
+// use utils::data_handle::db_time_to_proto_time;
 use volo_gen::google::protobuf::{Any, Timestamp};
 
 pub fn user_model_to_user_grpc_response(user: User) -> UserResponse {
