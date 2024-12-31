@@ -9,8 +9,6 @@
 		"ghcr.io/devcontainers/features/node:1": {},
 		"ghcr.io/devcontainers/features/python:1": {},
 		"ghcr.io/devcontainers/features/rust:1": {},
-		"devwasm.azurecr.io/dev-wasm/dev-wasm-feature/wasmtime-wasi:0": {},
-		"ghcr.io/lee-orr/rusty-dev-containers/wasmcloud:0": {},
 		"ghcr.io/devcontainers-extra/features/protoc-asdf:1": {}
 	},
 	"customizations": {
