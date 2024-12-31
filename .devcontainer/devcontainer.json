@@ -30,6 +30,9 @@
 				"Swellaby.rust-pack",
 				"fill-labs.dependi"
 			]
+		},
+		"settings": {
+			"terminal.integrated.shell.linux": "/usr/bin/zsh"
 		}
 	}
 
