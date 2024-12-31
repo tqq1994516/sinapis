@@ -8,7 +8,7 @@ use argon2::{
     },
 };
 
-static SALT: &str = "semen-sinapis";
+static SALT: &str = "sinapis";
 
 pub fn encryption(password: &str) -> String {
     Argon2::default()

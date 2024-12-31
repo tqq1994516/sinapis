@@ -4,7 +4,7 @@ metadata:
   labels:
     app: aggregation-gateway
   name: aggregation-gateway
-  namespace: semen-sinapis
+  namespace: sinapis
 spec:
   replicas: 3
   selector:
@@ -33,7 +33,7 @@ spec:
             configMapKeyRef:
               key: ADDR
               name: aggregation-gateway-cm
-        image: 192.168.33.48/library/semen-sinapis/aggregation-gateway:v0.0.10
+        image: 192.168.33.48/library/sinapis/aggregation-gateway:v0.0.10
         imagePullPolicy: Alaways
         name: aggregation-gateway
         ports:
@@ -45,7 +45,7 @@ metadata:
   labels:
     app: aggregation-gateway
   name: aggregation-gateway-svc
-  namespace: semen-sinapis
+  namespace: sinapis
 spec:
   ports:
   - port: 80
@@ -63,17 +63,17 @@ metadata:
   labels:
     app: aggregation-gateway
   name: aggregation-gateway-cm
-  namespace: semen-sinapis
+  namespace: sinapis
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: aggregation-gateway
-  namespace: semen-sinapis
+  namespace: sinapis
 spec:
   ingressClassName: apisix
   rules:
-  - host: semen-sinapis.aggregation-gateway.local
+  - host: sinapis.aggregation-gateway.local
     http:
       paths:
       - path: /

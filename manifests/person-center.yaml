@@ -4,7 +4,7 @@ metadata:
   labels:
     app: person-center
   name: person-center
-  namespace: semen-sinapis
+  namespace: sinapis
 spec:
   replicas: 3
   selector:
@@ -38,7 +38,7 @@ spec:
             configMapKeyRef:
               key: DATABASE_URL
               name: person-center-cm
-        image: 192.168.33.48/library/semen-sinapis/person-center:v0.0.1
+        image: 192.168.33.48/library/sinapis/person-center:v0.0.1
         imagePullPolicy: Alaways
         name: person-center
         ports:
@@ -50,7 +50,7 @@ metadata:
   labels:
     app: person-center
   name: person-center-svc
-  namespace: semen-sinapis
+  namespace: sinapis
 spec:
   ports:
   - port: 50000
@@ -69,4 +69,4 @@ metadata:
   labels:
     app: person-center
   name: person-center-cm
-  namespace: semen-sinapis
+  namespace: sinapis

@@ -1,7 +1,7 @@
 [package]
 name = "volo-gen"
-version = "0.1.0"
-edition = "2021"
+version = {workspace = true}
+edition = {workspace = true}
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -13,7 +13,7 @@ anyhow = { workspace = true }
 async-trait = { workspace = true }
 futures = { workspace = true }
 
-tokio = { workspace = true, features = ["full"] }
+tokio = { workspace = true, features = ["sync", "macros", "io-util", "rt", "time"] }
 
 [build-dependencies]
 volo-build = { workspace = true }

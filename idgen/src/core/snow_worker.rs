@@ -3,6 +3,7 @@ use std::thread::sleep;
 
 use super::{IdGeneratorOptions, OverCostActionArg};
 
+#[derive(Copy, Clone)]
 pub struct SnowWorker {
     ///基础时间
     pub base_time: i64,

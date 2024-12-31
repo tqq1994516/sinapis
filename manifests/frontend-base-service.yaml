@@ -4,7 +4,7 @@ metadata:
   labels:
     app: frontend-base-service
   name: frontend-base-service
-  namespace: semen-sinapis
+  namespace: sinapis
 spec:
   replicas: 3
   selector:
@@ -43,7 +43,7 @@ spec:
             configMapKeyRef:
               key: CONFIG_NAMESPACE
               name: frontend-base-service-cm
-        image: 192.168.33.48/library/semen-sinapis/frontend-base-service:v0.0.1
+        image: 192.168.33.48/library/sinapis/frontend-base-service:v0.0.1
         imagePullPolicy: Alaways
         name: frontend-base-service
         ports:
@@ -55,7 +55,7 @@ metadata:
   labels:
     app: frontend-base-service
   name: frontend-base-service-svc
-  namespace: semen-sinapis
+  namespace: sinapis
 spec:
   ports:
   - port: 50000
@@ -68,11 +68,11 @@ spec:
 apiVersion: v1
 data:
   ADDR: 0.0.0.0:50000
-  CONFIG_NAMESPACE: semen-sinapis
+  CONFIG_NAMESPACE: sinapis
   NACOS_HOST: nacos-cs:8848
 kind: ConfigMap
 metadata:
   labels:
     app: frontend-base-service
   name: frontend-base-service-cm
-  namespace: semen-sinapis
+  namespace: sinapis

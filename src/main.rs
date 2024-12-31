@@ -9,7 +9,7 @@
 //     use idgen::{IdGeneratorOptions, IdHelper};
 //     use layer::{auth::auth_middleware, middleware::{sea_orm_connect_extension, redis_connect_extension, person_center_grpc_extension}};
 //     use entity::state::OpenApiState;
-//     use semen_sinapis::app::*;
+//     use sinapis::app::*;
 
 //     let project_dir = std::env::current_dir().unwrap();
 //     dotenv::from_path(project_dir.join("entity").join(".env")).unwrap();

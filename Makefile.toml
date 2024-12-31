@@ -1,0 +1,26 @@
+[tasks.wit-deps-fetch]
+workspace = false
+command = "wash"
+args = ["wit", "deps"]
+
+[tasks.build]
+workspace = false
+command = "cargo"
+args = ["leptos", "build"]
+dependencies = ["wit-deps-fetch"]
+
+[tasks.build-prod]
+workspace = false
+command = "cargo"
+args = ["leptos", "build", "--release"]
+dependencies = ["wit-deps-fetch"]
+
+[tasks.wash-build]
+workspace = false
+command = "wash"
+args = ["claims", "sign", "./target/server/wasm32-wasip2/debug/sinapis.wasm", "-d", "./target/server/wasm32-wasip2/debug/sinapis_s.wasm"]
+
+[tasks.wash-build-prod]
+workspace = false
+command = "wash"
+args = ["claims", "sign", "./target/server/wasm32-wasip2/wasm-release/sinapis.wasm", "-d", "./target/server/wasm32-wasip2/wasm-release/sinapis_s.wasm"]

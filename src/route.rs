@@ -25,7 +25,7 @@ use crate::core::state::GrpcClientState;
     ),
     // modifiers(&SecurityAddon),
     tags(
-        (name = "semen-sinapis", description = "Semen sinapis management API")
+        (name = "sinapis", description = "Sinapis management API")
     )
 )]
 struct ApiDoc;

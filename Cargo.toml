@@ -1,10 +1,7 @@
 [package]
-name = "semen-sinapis"
-version = "0.1.0"
+name = "sinapis"
+version = "0.0.1"
 edition = "2021"
-
-[profile.dev.build-override]
-debug = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [workspace]
@@ -21,10 +18,12 @@ members = [
     "idgen",
     "pool",
     "crypto_tool",
+    "proxy",
+    "identification_plugin",
 ]
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["cdylib"]
 
 [features]
 hydrate = [
@@ -35,16 +34,14 @@ hydrate = [
 ssr = [
     "dep:tracing",
     "dep:leptos_wasi",
+    "dep:wasi",
     "dep:dotenv",
-    "dep:sea-orm",
+    "dep:wit-bindgen",
     "leptos/ssr",
     "leptos_meta/ssr",
     "leptos_router/ssr",
     "thaw/ssr",
     "leptos-use/ssr",
-    "dep:layer",
-    "dep:entity",
-    "dep:pool",
 ]
 
 [dependencies]
@@ -53,6 +50,7 @@ console_error_panic_hook = "*"
 anyhow = "*"
 leptos_meta = "*"
 futures = "*"
+bytes = "*"
 thiserror = "*"
 chrono = "*"
 jsonwebtoken = "*"
@@ -61,7 +59,8 @@ regex = "*"
 codee = "*"
 hydration_context = "*"
 
-wasm-bindgen = { version = "0.2.95", optional = true }
+wit-bindgen = { version = "*", optional = true }
+wasm-bindgen = { version = "0.2.99", optional = true }  # 和cargo-leptos版本绑定,当前：0.2.24
 wasi = { version = "0.13.3", optional = true }
 serde = { version = "*", features = ["derive"] }
 leptos = { version = "*", features = ["nightly", "islands"] }
@@ -70,23 +69,27 @@ leptos_router = { version = "*", features = ["nightly"] }
 tracing = { version = "*", optional = true }
 uuid = { version = "*", features = ["serde", "v4"] }
 cookie = { version = "*", features = ["percent-encode", "private"] }
-thaw = { git = "https://github.com/thaw-ui/thaw.git", features = ["nightly"], optional = true }
+thaw = { version = "*", features = ["nightly"], optional = true }
 leptos-use = { version = "*" }
 dotenv = { version = "*", optional = true }
-sea-orm = { version = "*", optional = true, features = [
-    "sqlx-postgres",
-    "runtime-tokio-native-tls",
-    "macros",
-    "with-time",
-    "with-json",
-    "postgres-array",
-] }
+# sea-orm = { version = "*", optional = true, features = [
+#     "sqlx-postgres",
+#     "runtime-tokio-native-tls",
+#     "macros",
+#     "with-time",
+#     "with-json",
+#     "postgres-array",
+# ] }
 
-idgen = { path = "idgen" }
-layer = { path = "layer", optional = true }
-entity = { path = "entity", optional = true }
-pool = { path = "pool", optional = true }
+# idgen = { path = "idgen" }
+# layer = { path = "layer", optional = true }
+# entity = { path = "entity", optional = true }
+# pool = { path = "pool", optional = true }
 # volo-gen = { path = "volo-gen" }
+
+[workspace.package]
+version = "0.0.1"
+edition = "2021"
 
 [workspace.dependencies]
 # dapr = "*"
@@ -139,6 +142,9 @@ bb8-postgres = "*"
 pin-project = "*"
 sodiumoxide = "*"
 regex = "*"
+libloading = "*"
+pingora = "*"
+tokio = "*"
 
 # Defines a size-optimized profile for the WASM bundle in release mode
 [profile.wasm-release]
@@ -162,12 +168,6 @@ assets-dir = "public"
 end2end-cmd = "npx playwright test"
 end2end-dir = "end2end"
 
-#  The browserlist query used for optimizing the CSS.
-browserquery = "defaults"
-
-# The environment Leptos will run in, usually either "DEV" or "PROD"
-env = "DEV"
-
 # == Hydrate (client)
 lib-profile-release = "wasm-release"
 lib-features = ["hydrate"]
@@ -182,7 +182,7 @@ lib-cargo-args = [
 bin-profile-release = "wasm-release"
 bin-target-triple = "wasm32-wasip2"
 bin-features = ["ssr"]
-bin-target-dir = "target"
+bin-target-dir = "target/server"
 
 # ==== Rebuild the std crates using the optimized profile.
 bin-cargo-args = [

@@ -1,0 +1,12 @@
+[package]
+name = "proxy"
+version = {workspace = true}
+edition = {workspace = true}
+
+[dependencies]
+async-trait = { workspace = true }
+libloading = { workspace = true }
+dotenv = { workspace = true }
+http ={ workspace = true }
+
+pingora = { workspace = true, features = ["lb", "proxy", "cache", "time"] }

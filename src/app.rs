@@ -33,7 +33,7 @@ pub fn App() -> impl IntoView {
     view! {
         // injects a stylesheet into the document <head>
         // id=leptos means cargo-leptos will hot-reload this stylesheet
-        <Stylesheet id="leptos" href="/pkg/semen-sinapis.css"/>
+        <Stylesheet id="leptos" href="/pkg/sinapis.css"/>
 
         // sets the document title
         <Title text="Welcome to Leptos"/>
@@ -89,27 +89,28 @@ fn GetId() -> impl IntoView {
 
 #[server]
 pub async fn login() -> Result<i64, ServerFnError> {
-    use axum::{Extension, http::StatusCode};
-    use leptos_axum::{extract, redirect, ResponseOptions};
-    use bb8::Pool;
+    // use axum::{Extension, http::StatusCode};
+    // use leptos_axum::{extract, redirect, ResponseOptions};
+    // use bb8::Pool;
 
-    use entity::user_property;
-    use pool::grpc::person_center::PersonCenterGrpcClientManager;
+    // use entity::user_property;
+    // use pool::grpc::person_center::PersonCenterGrpcClientManager;
 
-    redirect("/");
-    let person_center_pool: Extension<Pool<PersonCenterGrpcClientManager>> = extract().await?;
-    let person_center_client = person_center_pool.get().await.unwrap();
+    // redirect("/");
+    // let person_center_pool: Extension<Pool<PersonCenterGrpcClientManager>> = extract().await?;
+    // let person_center_client = person_center_pool.get().await.unwrap();
 
-    match user_property::Entity::find_by_id(1).one(&pg_conn.0).await? {
-        Some(user) => {
-            let response = expect_context::<ResponseOptions>();
+    // match user_property::Entity::find_by_id(1).one(&pg_conn.0).await? {
+    //     Some(user) => {
+    //         let response = expect_context::<ResponseOptions>();
 
-            // set the HTTP status code
-            response.set_status(StatusCode::ACCEPTED);
-            Ok(user.id)
-        },
-        None => Ok(0),
-    }
+    //         // set the HTTP status code
+    //         response.set_status(StatusCode::ACCEPTED);
+    //         Ok(user.id)
+    //     },
+    //     None => Ok(0),
+    // }
+    Ok(1)
 }
 
 #[server]

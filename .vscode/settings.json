@@ -383,8 +383,5 @@
             "multiline": true
         }
     ],
-    "rust-analyzer.cargo.features": [
-        "ssr",
-        "hydrate"
-    ]
+    "rust-analyzer.cargo.features": ["ssr"]
 }

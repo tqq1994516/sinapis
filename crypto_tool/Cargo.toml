@@ -1,8 +1,9 @@
 [package]
 name = "crypto_tool"
-version = "0.1.0"
-edition = "2021"
+version = {workspace = true}
+edition = {workspace = true}
 
 [dependencies]
 rand = "*"
+
 ed25519-dalek = { version = "*", features = ["rand_core", "pem"] }

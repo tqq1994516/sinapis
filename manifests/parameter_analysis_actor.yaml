@@ -4,7 +4,7 @@ metadata:
   labels:
     app: parameter-analysis-actor
   name: parameter-analysis-actor
-  namespace: semen-sinapis
+  namespace: sinapis
 spec:
   replicas: 3
   selector:

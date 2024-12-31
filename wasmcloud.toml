@@ -1,0 +1,10 @@
+name = "sinapis"
+language = "rust"
+type = "component"
+# build = "./target/server/wasm32-wasip2/debug"  # dev build
+build = "./target/server/wasm32-wasip2/wasm-release"  # prod build
+
+[component]
+wasm_target = "wasm32-wasip2"
+# build_command = "cargo make build"  # dev build
+build_command = "cargo make build-prod"  # prod build

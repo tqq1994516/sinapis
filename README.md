@@ -1,3 +1,3 @@
-# semen-sinapis share source
+# sinapis share source
 - proto
 - dapr actor interface

@@ -1,0 +1,22 @@
+[package]
+name = "identification_plugin"
+version = {workspace = true}
+edition = {workspace = true}
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+async-trait = { workspace = true }
+pingora = { workspace = true }
+apache_age = { workspace = true }
+http = { workspace = true }
+
+sea-orm = { workspace = true, features = [
+    "sqlx-postgres",
+    "runtime-tokio-native-tls",
+    "macros",
+    "with-time",
+    "with-json",
+    "postgres-array",
+] }

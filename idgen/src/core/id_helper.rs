@@ -1,38 +1,30 @@
-use std::sync::Mutex;
-use std::sync::Arc;
+use std::sync::OnceLock;
 
 use super::DefaultIdGenerator;
 use super::IdGeneratorOptions;
 
 pub struct IdHelper;
 
-static mut ID_GEN_INSTANCE: Option<Arc<Mutex<DefaultIdGenerator>>> = None;
+static ID_GEN_INSTANCE: OnceLock<DefaultIdGenerator> = OnceLock::new();
 
 impl IdHelper {
-    fn id_gen_instance() -> Arc<Mutex<DefaultIdGenerator>> {
-        unsafe {
-            ID_GEN_INSTANCE.get_or_insert_with(|| {
-                Arc::new(Mutex::new(DefaultIdGenerator::default()))
-            }).clone()
-        }
+    fn id_gen_instance() -> DefaultIdGenerator {
+        *ID_GEN_INSTANCE.get_or_init(|| DefaultIdGenerator::default())
     }
 
     pub fn set_id_generator(options: IdGeneratorOptions) {
-        let idgen_arc = IdHelper::id_gen_instance();
-        let mut idgen = idgen_arc.lock().unwrap();
+        let mut idgen = IdHelper::id_gen_instance();
         idgen.worker.set_options(options);
     }
 
     pub fn set_worker_id(worker_id: u32) {
-        let idgen_arc = IdHelper::id_gen_instance();
-        let mut idgen = idgen_arc.lock().unwrap();
+        let mut idgen = IdHelper::id_gen_instance();
         let options = IdGeneratorOptions::new(worker_id);
         idgen.worker.set_options(options);
     }
 
     pub fn next_id() -> i64 {
-        let idgen_arc = IdHelper::id_gen_instance();
-        let mut idgen = idgen_arc.lock().unwrap();
+        let mut idgen = IdHelper::id_gen_instance();
         idgen.worker.next_id()
     }
 }
