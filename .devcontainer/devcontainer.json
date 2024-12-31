@@ -10,7 +10,8 @@
 		"ghcr.io/devcontainers/features/python:1": {},
 		"ghcr.io/devcontainers/features/rust:1": {},
 		"ghcr.io/devcontainers-extra/features/protoc:1": {},
-		"ghcr.io/lee-orr/rusty-dev-containers/cargo-binstall:0": {}
+		"ghcr.io/lee-orr/rusty-dev-containers/cargo-binstall:0": {},
+		"ghcr.io/lee-orr/rusty-dev-containers/cargo-make:0": {}
 	},
 	"customizations": {
 		"vscode": {
@@ -26,17 +27,23 @@
 				"ms-python.python",
 				"njpwerner.autodocstring",
 				"bradlc.vscode-tailwindcss",
-				"1YiB.rust-bundle",
-				"nyxiative.rust-and-friends",
-				"Swellaby.rust-pack",
-				"fill-labs.dependi"
+				"fill-labs.dependi",
+				"dustypomerleau.rust-syntax",
+				"rust-lang.rust-analyzer",
+				"tamasfe.even-better-toml",
+				"lorenzopirro.rust-flash-snippets",
+				"ZhangYue.rust-mod-generator",
+				"vadimcn.vscode-lldb",
+				"evgeniypeshkov.syntax-highlighter",
+				"JScearcy.rust-doc-viewer",
+				"PolyMeilex.rust-targets"
 			]
 		},
 		"settings": {
 			"terminal.integrated.shell.linux": "/usr/bin/zsh"
 		}
 	},
-	"postCreateCommand": "cargo install --locked wash-cli"
+	"postCreateCommand": "cargo install --locked wash-cli&&cargo install --locked --version 0.2.24 cargo-leptos"
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
