@@ -43,10 +43,9 @@
 			"terminal.integrated.shell.linux": "/usr/bin/zsh"
 		}
 	},
-	"postCreateCommand": "cargo install --locked wash-cli&&cargo install --locked --version 0.2.24 cargo-leptos"
+	"postCreateCommand": "cargo install --locked wash-cli&&cargo install --locked --version 0.2.24 cargo-leptos",
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+	"forwardPorts": [8000]
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
