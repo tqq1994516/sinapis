@@ -1,41 +1,52 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
-	"image": "ubuntu:latest",
+	"name": "Ubuntu",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/base:jammy",
 	"features": {
-		"ghcr.io/devcontainers/features/git:1": {
-			"version": "latest"
-		},
-		"ghcr.io/devcontainers/features/rust:1": {
-			"version": "latest"
-		},
-		"ghcr.io/devcontainers-contrib/features/protoc:1": {
-			"version": "latest"
-		},
-		"devwasm.azurecr.io/dev-wasm/dev-wasm-feature/rust-wasi:0": {
-			"version": "latest"
-		},
-		"ghcr.io/devcontainers/features/node:1": {
-			"version": "latest"
-		},
-		"ghcr.io/lee-orr/rusty-dev-containers/wasmcloud:0": {}
+		"ghcr.io/devcontainers/features/git:1": {},
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/devcontainers/features/python:1": {},
+		"ghcr.io/devcontainers/features/rust:1": {},
+		"devwasm.azurecr.io/dev-wasm/dev-wasm-feature/wasmtime-wasi:0": {},
+		"ghcr.io/lee-orr/rusty-dev-containers/wasmcloud:0": {},
+		"ghcr.io/devcontainers-extra/features/protoc-asdf:1": {}
 	},
 	"customizations": {
-		// Configure properties specific to VS Code.
 		"vscode": {
-			// Set *default* container specific settings.json values on container create.
-			"settings": {},
 			"extensions": [
 				"adam-bender.commit-message-editor",
 				"mikestead.dotenv",
-				"1YiB.rust-bundle",
 				"oderwat.indent-rainbow",
-				"kennylong.kubernetes-yaml-formatter",
 				"DavidAnson.vscode-markdownlint",
 				"Gruntfuggly.todo-tree",
 				"zxh404.vscode-proto3",
 				"redhat.vscode-yaml",
 				"redhat.vscode-xml",
-				"LeoJhonSong.python-extension-pack"
+				"ms-python.python",
+				"njpwerner.autodocstring",
+				"bradlc.vscode-tailwindcss",
+				"1YiB.rust-bundle",
+				"nyxiative.rust-and-friends",
+				"Swellaby.rust-pack",
+				"fill-labs.dependi"
 			]
 		}
 	}
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "uname -a",
+
+	// Configure tool-specific properties.
+	// "customizations": {},
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
 }
