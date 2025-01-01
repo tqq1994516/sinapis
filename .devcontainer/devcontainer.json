@@ -43,7 +43,7 @@
 			"terminal.integrated.shell.linux": "/usr/bin/zsh"
 		}
 	},
-	"postCreateCommand": "apt install clang -y&&cargo install --locked wash-cli&&cargo install --locked --version 0.2.24 cargo-leptos&&cargo install cargo-make&&pnpm i",
+	"postCreateCommand": "apt install clang -y&&cargo install --locked wash-cli&&cargo install --locked --version 0.2.24 cargo-leptos&&cargo install cargo-make&&cargo install wasm-opt&&pnpm i",
 
 	"forwardPorts": [8000]
 
