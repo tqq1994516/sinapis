@@ -19,7 +19,7 @@ members = [
     "pool",
     "crypto_tool",
     "proxy",
-    "identification_plugin",
+    "identification",
 ]
 
 [lib]
@@ -145,6 +145,8 @@ regex = "*"
 libloading = "*"
 pingora = "*"
 tokio = "*"
+wit-bindgen = "*"
+wasmcloud-component = "*"
 
 # Defines a size-optimized profile for the WASM bundle in release mode
 [profile.wasm-release]

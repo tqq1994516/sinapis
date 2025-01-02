@@ -539,7 +539,6 @@ pub async fn search_user_attribute_node(
         Ok(cypher) => cypher,
         Err(s) => return Err(s),
     };
-    client.
     let user_attribute = match client.query_cypher::<()>(GRAPH_NAME, &cypher, None).await {
         Ok(rows) => {
             if !rows.is_empty() {

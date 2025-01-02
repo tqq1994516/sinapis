@@ -1,0 +1,12 @@
+package sinapis:identification;
+
+interface invoke {
+    /// Account identification
+    identification: func(account: string, password: string) -> string;
+}
+
+world component {
+    import wasmcloud:postgres/query@0.1.1-draft;
+
+    export invoke;
+}
